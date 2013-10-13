@@ -2,6 +2,8 @@ module Lightyear.Combinators
 
 import Lightyear.Core
 
+%access public
+
 many : Monad m => ParserT m str a -> ParserT m str (List a)
 many p = [| p :: many p |] <|> pure [] <?+> "many"
 

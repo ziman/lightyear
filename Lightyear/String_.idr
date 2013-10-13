@@ -5,6 +5,8 @@ module Lightyear.String_
 import Lightyear.Core
 import Lightyear.Combinators
 
+%access public
+
 private
 uncons : String -> Maybe (Char, String)
 uncons s with (strM s)

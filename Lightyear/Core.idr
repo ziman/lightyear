@@ -1,5 +1,7 @@
 module Lightyear.Core
 
+%access public
+
 data Tag =
     Lib   -- syntax elements from this library
   | User  -- solely user-defined elements (none found here)
