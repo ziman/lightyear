@@ -61,8 +61,8 @@ skip = map (const ())
 record Stream : Type -> Type -> Type where
   St : (uncons : str -> Maybe (tok, str)) -> Stream tok str
 
-satisfy : (Monad m) => Stream tok str -> (tok -> Bool) -> ParserT m str tok
-satisfy (St uncons) p = PT $ \s => pure $ case uncons s of
+satisfy' : (Monad m) => Stream tok str -> (tok -> Bool) -> ParserT m str tok
+satisfy' (St uncons) p = PT $ \s => pure $ case uncons s of
   Nothing => fail s $ "<???-1>"
   Just (t, s') => case p t of
     True  => Success s' t

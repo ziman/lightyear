@@ -1,2 +1,2 @@
 package lightyear
-modules = Lightyear.Core, Lightyear.Combinators
+modules = Lightyear.Core, Lightyear.Combinators, Lightyear.String
