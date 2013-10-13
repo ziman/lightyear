@@ -7,6 +7,11 @@ data Tag =
   | User  -- solely user-defined elements (none found here)
   | Mod   -- modifiers/extenders, like many, some, parens, ...
 
+instance Show Tag where
+  show Lib  = "Lib"
+  show User = "User"
+  show Mod  = "Mod"
+
 data Result str a =
     Success str a
   | Failure (List (Tag, str, String)) -- a stacktrace of errors based on <??> and friends
