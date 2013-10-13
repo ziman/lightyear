@@ -6,7 +6,10 @@ data Tag =
     Lib   -- syntax elements from this library
   | User  -- solely user-defined elements (none found here)
   | Mod   -- modifiers/extenders, like many, some, parens, ...
-data Result str a = Success str a | Failure (List (Tag, str, String))
+
+data Result str a =
+    Success str a
+  | Failure (List (Tag, str, String)) -- a stacktrace of errors based on <??> and friends
 
 instance Functor (Result str) where
   map f (Success s x) = Success s (f x)
