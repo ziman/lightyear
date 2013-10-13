@@ -1,4 +1,6 @@
-module Lightyear.String
+module Lightyear.String_
+-- Reserved words cannot be used in module names.
+-- Unfortunately, String is a reserved word.
 
 import Lightyear.Core
 import Lightyear.Combinators
