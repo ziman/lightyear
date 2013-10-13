@@ -1,6 +1,9 @@
 module Lightyear.Core
 
-data Tag = Lib | User
+data Tag =
+    Lib   -- syntax elements from this library
+  | User  -- solely user-defined elements (none found here)
+  | Mod   -- modifiers/extenders, like many, some, parens, ...
 data Result str a = Success str a | Failure (List (Tag, str, String))
 
 instance Functor (Result str) where
@@ -39,14 +42,15 @@ infixl 0 <??>
    Failure es  => pure $ Failure ((t, s, msg) :: es)
    Success s x => pure $ Success s x
 
+-- should take a noun: (many) "element"
 infixl 0 <?>
 (<?>) : Monad m => ParserT m str a -> String -> ParserT m str a
 p <?> msg = p <??> (User, msg)
 
-infixl 0 <?->
-private
-(<?->) : Monad m => ParserT m str a -> String -> ParserT m str a
-p <?-> msg = p <??> (Lib, msg)
+-- should take an adjective: "many" (elements)
+infixl 0 <?+>
+(<?+>) : Monad m => ParserT m str a -> String -> ParserT m str a
+p <?+> msg = p <??> (Mod, msg)
 
 c2s : Char -> String
 c2s c = pack (c :: [])
@@ -54,31 +58,12 @@ c2s c = pack (c :: [])
 skip : Functor f => f a -> f ()
 skip = map (const ())
 
-satisfy : Monad m => (Char -> Bool) -> ParserT m String Char
-satisfy p = PT f
-  where
-    f s with (strM s)
-      f "" | StrNil
-          = pure . fail "" $ "not eof"
-      f (strCons x xs) | StrCons x xs
-          = case p x of
-            True  => pure $ Success xs x
-            False => pure . fail (strCons x xs) $ "not '" ++ c2s x ++ "'"
+record Stream : Type -> Type -> Type where
+  St : (uncons : str -> Maybe (tok, str)) -> Stream tok str
 
-char : Monad m => Char -> ParserT m String ()
-char c = skip (satisfy (== c)) <?-> "character '" ++ c2s c ++ "'"
-
-string : Monad m => String -> ParserT m String ()
-string s = traverse_ char (unpack s) <?-> "string " ++ show s
-
-many : Monad m => ParserT m str a -> ParserT m str (List a)
-many p = [| p :: many p |] <|> pure []
-
-some : Monad m => ParserT m str a -> ParserT m str (List a)
-some p = [| p :: many p |]
-
-space : Monad m => ParserT m String ()
-space = skip . many . satisfy $ isSpace <?-> "whitespace"
-
-token : Monad m => String -> ParserT m String ()
-token s = skip (string s) <$ space <?-> "token " ++ show s
+satisfy : (Monad m) => Stream tok str -> (tok -> Bool) -> ParserT m str tok
+satisfy (St uncons) p = PT $ \s => pure $ case uncons s of
+  Nothing => fail s $ "<???-1>"
+  Just (t, s') => case p t of
+    True  => Success s' t
+    False => fail s $ "<???-2>"
