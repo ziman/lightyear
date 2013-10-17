@@ -88,7 +88,7 @@ record Stream : Type -> Type -> Type where
 
 satisfy' : (Monad m) => Stream tok str -> (tok -> Bool) -> ParserT m str tok
 satisfy' (St uncons) p = PT $ \s => pure $ case uncons s of
-  Nothing => fail s $ "<???-1>"
+  Nothing => fail s $ "<???:1>"
   Just (t, s') => case p t of
     True  => Success s' t
-    False => fail s $ "<???-2>"
+    False => fail s $ "<???:2>"
