@@ -35,7 +35,7 @@ infixl 2 <$*>
 
 instance Monad m => Applicative (ParserT m str) where
   pure x = PT (\s => pure (Success s x))
-  (<$>) f x = f <$*> x 
+  (<$>) = (<$*>)
 
 instance Monad m => Monad (ParserT m str) where
   (>>=) (PT x) f = PT $ \s => x s >>= \r => case r of
@@ -54,7 +54,7 @@ infixl 3 <|*>
 
 instance Monad m => Alternative (ParserT m str) where
   empty = PT (\s => pure . fail s $ "non-empty alternative")
-  (<|>) x y = x <|*> y
+  (<|>) = (<|*>)
 
 infixl 0 <??>
 (<??>) : Monad m => ParserT m str a -> (Tag, String) -> ParserT m str a
