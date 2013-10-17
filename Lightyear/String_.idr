@@ -2,6 +2,8 @@ module Lightyear.String_
 -- Reserved words cannot be used in module names.
 -- Unfortunately, String is a reserved word.
 
+import Control.Monad.Identity
+
 import Lightyear.Core
 import Lightyear.Combinators
 

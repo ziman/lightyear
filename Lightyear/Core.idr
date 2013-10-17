@@ -26,11 +26,16 @@ record ParserT : (m : Type -> Type) -> (str : Type) -> (a : Type) -> Type where
 instance Monad m => Functor (ParserT m str) where
   map f (PT p) = PT (map (map f) . p)
 
+-- Lazy variant of <$>.
+infixl 2 <$*>
+(<$*>) : Monad m => ParserT m str (a -> b) -> |(x : ParserT m str a) -> ParserT m str b
+(<$*>) (PT f) x = PT $ \s => f s >>= \f' => case f' of
+  Failure es   => pure (Failure es)
+  Success s' g => let PT x' = x in map (map g) (x' s')
+
 instance Monad m => Applicative (ParserT m str) where
   pure x = PT (\s => pure (Success s x))
-  (<$>) (PT f) (PT x) = PT $ \s => f s >>= \f' => case f' of
-    Failure es   => pure (Failure es)
-    Success s' g => x s' >>= pure . map g
+  (<$>) f x = f <$*> x 
 
 instance Monad m => Monad (ParserT m str) where
   (>>=) (PT x) f = PT $ \s => x s >>= \r => case r of
@@ -40,11 +45,16 @@ instance Monad m => Monad (ParserT m str) where
 fail : str -> String -> Result str a
 fail s msg = Failure ((Lib, s, msg) :: [])
 
+-- Lazy variant of <|>.
+infixl 3 <|*>
+(<|*>) : Monad m => ParserT m str a -> |(y : ParserT m str a) -> ParserT m str a
+(<|*>) (PT x) y = PT $ \s => x s >>= \r => case r of
+  Success s' x' => pure (Success s' x')
+  Failure es    => let PT y' = y in y' s
+
 instance Monad m => Alternative (ParserT m str) where
   empty = PT (\s => pure . fail s $ "non-empty alternative")
-  (<|>) (PT x) (PT y) = PT $ \s => x s >>= \r => case r of
-    Success s' y => pure (Success s' y)
-    Failure es   => y s
+  (<|>) x y = x <|*> y
 
 infixl 0 <??>
 (<??>) : Monad m => ParserT m str a -> (Tag, String) -> ParserT m str a

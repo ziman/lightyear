@@ -5,7 +5,8 @@ import Lightyear.Core
 %access public
 
 many : Monad m => ParserT m str a -> ParserT m str (List a)
-many p = [| p :: many p |] <|> pure [] <?+> "many"
+many p = (pure (::) <$> p <$*> many p) <|*> pure [] <?+> "many"
+-- note: we need to use the lazy <$*> because of the recursion
 
 some : Monad m => ParserT m str a -> ParserT m str (List a)
 some p = [| p :: many p |] <?+> "some"
