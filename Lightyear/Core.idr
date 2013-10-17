@@ -45,12 +45,17 @@ instance Monad m => Monad (ParserT m str) where
 fail : str -> String -> Result str a
 fail s msg = Failure ((Lib, s, msg) :: [])
 
+-- include error stack from the other alternative branch
+altError : Monad m => List (Tag, str, String) -> Result str a -> Result str a
+altError es (Success s x) = Success s x
+altError es (Failure es') = Failure es'  -- TODO
+
 -- Lazy variant of <|>.
 infixl 3 <|*>
 (<|*>) : Monad m => ParserT m str a -> |(y : ParserT m str a) -> ParserT m str a
 (<|*>) (PT x) y = PT $ \s => x s >>= \r => case r of
   Success s' x' => pure (Success s' x')
-  Failure es    => let PT y' = y in y' s
+  Failure es    => let PT y' = y in map (altError es) (y' s)
 
 instance Monad m => Alternative (ParserT m str) where
   empty = PT (\s => pure . fail s $ "non-empty alternative")
