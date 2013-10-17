@@ -7,6 +7,12 @@ import Lightyear.Combinators
 
 %access public
 
+Parser : Type -> Type
+Parser = ParserT Identity String
+
+parse : Parser a -> String -> Result String a
+parse (PT f) s = let Id p = f s in p
+
 private
 uncons : String -> Maybe (Char, String)
 uncons s with (strM s)
