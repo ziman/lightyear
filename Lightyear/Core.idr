@@ -26,16 +26,14 @@ record ParserT : (m : Type -> Type) -> (str : Type) -> (a : Type) -> Type where
 instance Monad m => Functor (ParserT m str) where
   map f (PT p) = PT (map (map f) . p)
 
--- Lazy variant of <$>.
-infixl 2 <$*>
-(<$*>) : Monad m => ParserT m str (a -> b) -> |(x : ParserT m str a) -> ParserT m str b
-(<$*>) (PT f) x = PT $ \s => f s >>= \f' => case f' of
-  Failure es   => pure (Failure es)
-  Success s' g => let PT x' = x in map (map g) (x' s')
-
 instance Monad m => Applicative (ParserT m str) where
   pure x = PT (\s => pure (Success s x))
-  (<$>) = (<$*>)
+
+  -- Beware! the following function must NOT pattern-match
+  -- on its second argument right away because it might be lazy.
+  (<$>) (PT f) x = PT $ \s => f s >>= \f' => case f' of
+    Failure es   => pure (Failure es)
+    Success s' g => let PT x' = x in map (map g) (x' s')
 
 instance Monad m => Monad (ParserT m str) where
   (>>=) (PT x) f = PT $ \s => x s >>= \r => case r of
@@ -50,16 +48,14 @@ altError : Monad m => List (Tag, str, String) -> Result str a -> Result str a
 altError es (Success s x) = Success s x
 altError es (Failure es') = Failure es'  -- TODO
 
--- Lazy variant of <|>.
-infixl 3 <|*>
-(<|*>) : Monad m => ParserT m str a -> |(y : ParserT m str a) -> ParserT m str a
-(<|*>) (PT x) y = PT $ \s => x s >>= \r => case r of
-  Success s' x' => pure (Success s' x')
-  Failure es    => let PT y' = y in map (altError es) (y' s)
-
 instance Monad m => Alternative (ParserT m str) where
   empty = PT (\s => pure . fail s $ "non-empty alternative")
-  (<|>) = (<|*>)
+
+  -- Beware! the following function must NOT pattern-match
+  -- on its second argument right away because it might be lazy.
+  (<|>) (PT x) y = PT $ \s => x s >>= \r => case r of
+    Success s' x' => pure (Success s' x')
+    Failure es    => let PT y' = y in map (altError es) (y' s)
 
 infixl 0 <??>
 (<??>) : Monad m => ParserT m str a -> (Tag, String) -> ParserT m str a

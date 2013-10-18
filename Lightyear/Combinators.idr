@@ -5,8 +5,7 @@ import Lightyear.Core
 %access public
 
 many : Monad m => ParserT m str a -> ParserT m str (List a)
-many p = (pure (::) <$> p <$*> many p) <|*> pure [] <?+> "many"
--- note: we need to use the lazy <$*> because of the recursion
+many p = [| p :: lazy (many p) |] <|> pure [] <?+> "many"
 
 some : Monad m => ParserT m str a -> ParserT m str (List a)
 some p = [| p :: many p |] <?+> "some"
@@ -18,5 +17,4 @@ sepBy : Monad m => ParserT m str a -> ParserT m str b -> ParserT m str (List a)
 sepBy p s = (p `sepBy1` s) <|> pure []
 
 alternating : Monad m => ParserT m str a -> ParserT m str a -> ParserT m str (List a)
-alternating p s = (pure (::) <$> p <$*> alternating s p) <|> pure []
--- lazy <$*> to handle recursion correctly
+alternating p s = [| p :: lazy (alternating s p) |] <|> pure []
