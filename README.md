@@ -11,7 +11,7 @@ Module overview:
 
 ## Synopsis
 
-This package is used (almost) the same as Parsec would be, except for one difference.
+This package is used (almost) the same way as Parsec would be, except for one difference.
 
 ### Commitment
 * Parsec combinators
@@ -33,6 +33,8 @@ Lightyear:
 ```haskell
 elem : Parser String
 elem = (string "0x" >> commitTo hexNumber) <|> string "0123"
+-- which may be abbreviated as:
+--   = (string "0x" >! hexNumber) <|> string "0123"
 ```
 
 After reading the prefix `0x`, both parsers commit to reading a hexadecimal number
@@ -51,13 +53,13 @@ A combinator that uses commitment might look like this (notice the leading
 ```haskell
 entry : Parser Entry
 entry = char '@' >! do
-  type <- pack <@> some (satisfy (/= '{'))
+  typ <- pack <@> some (satisfy (/= '{'))
   token "{"
   ident <- pack <@> some (satisfy (/= ','))
   token ","
   items <- item `sepBy` comma
   token "}"
-  return $ En type ident items
+  return $ En typ ident items
 ```
 
 ## Build
