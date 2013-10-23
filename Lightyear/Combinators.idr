@@ -36,14 +36,14 @@ x >! y = x >>= \_ => commitTo y
 
 -- Applicative-like operators
 
-infixr 2 <$!>
+infixl 2 <$!>
 (<$!>) : Monad m => ParserT m str (a -> b) -> ParserT m str a -> ParserT m str b
 f <$!> x = f <$> commitTo x
 
-infixr 2 <$!
+infixl 2 <$!
 (<$!) : Monad m => ParserT m str a -> ParserT m str b -> ParserT m str a
 x <$! y = x <$ commitTo y
 
-infixr 2 $!>
+infixl 2 $!>
 ($!>) : Monad m => ParserT m str a -> ParserT m str b -> ParserT m str b
 x $!> y = x $> commitTo y
