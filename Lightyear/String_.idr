@@ -6,14 +6,25 @@ import Control.Monad.Identity
 
 import Lightyear.Core
 import Lightyear.Combinators
+import Lightyear.Errmsg
 
 %access public
+
+private
+nat2int : Nat -> Int
+nat2int  Z    = 0
+nat2int (S x) = 1 + nat2int x
+
+instance Layout String where
+  lineLengths = map (nat2int . Prelude.Strings.length) . lines
 
 Parser : Type -> Type
 Parser = ParserT Identity String
 
-parse : Parser a -> String -> Result String a
-parse (PT f) s = let Id p = f s in p
+parse : Parser a -> String -> Either String a
+parse (PT f) s = let Id r = f s in case r of
+  Success _ x  => Right x
+  Failure _ es => Left $ formatError s es
 
 private
 uncons : String -> Maybe (Char, String)
