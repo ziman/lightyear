@@ -11,17 +11,15 @@ Module overview:
 
 ## Synopsis
 
-This package is used (almost) exactly as Parsec would be.
+This package is used (almost) the same as Parsec would be, except for one difference.
 
 ### Commitment
-Compared to Parsec, there's one fundamental difference.
+* Parsec combinators
+  won't backtrack if a branch of `<|>` has consumed any input, hence Parsec
+  parsers require an explicit `try`.
 
-Parsec combinators
-won't backtrack if a branch of `<|>` has consumed any input, hence Parsec
-parsers require an explicit `try`.
-
-Lightyear combinators are backtrack-by-default and there is
-the `commitTo` combinator that makes the parser commit to that branch.
+* Lightyear combinators are backtrack-by-default and there is
+  the `commitTo` combinator that makes the parser commit to that branch.
 
 In other words, the following two pieces of code are equivalent (using illustrative combinator names):
 
@@ -38,16 +36,15 @@ elem = (string "0x" >> commitTo hexNumber) <|> string "0123"
 ```
 
 After reading the prefix `0x`, both parsers commit to reading a hexadecimal number
-or nothing at all -- Parsec does this automatically, Lightyear uses a commitTo combinator
+or nothing at all — Parsec does this automatically, Lightyear uses a commitTo combinator
 for this purpose.
-
 On the other hand, Parsec requires the `string "0x"` to be wrapped in `try` because
 if we are reading `0123`, we definitely don't want to commit to the left branch
 upon seeing the leading `0`.
 
 For convenience, `commitTo` is merged in monadic and applicative operators,
 yielding the operators `>!=`, `>!`, `<$!>`, `<$!`, and `$!>`.
-The `!` in the names is inspired by the notation of cuts in Prolog.
+The `!` in the names is inspired by the notation used for cuts in Prolog.
 
 A combinator that uses commitment might look like this (notice the leading
 `char '@'` that leads to commitment):
@@ -55,13 +52,11 @@ A combinator that uses commitment might look like this (notice the leading
 entry : Parser Entry
 entry = char '@' >! do
   type <- pack <@> some (satisfy (/= '{'))
-  char '{'
+  token "{"
   ident <- pack <@> some (satisfy (/= ','))
-  char ','
-  space
+  token ","
   items <- item `sepBy` comma
-  char '}'
-  space
+  token "}"
   return $ En type ident items
 ```
 
