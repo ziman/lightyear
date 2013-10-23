@@ -53,8 +53,8 @@ infixl 0 <?>
     mogrify s (Failure c es) = Failure c ((s, msg) :: es)
     mogrify s (Success s x ) = Success s x
 
-commit : Monad m => ParserT m str a -> ParserT m str a
-commit (PT f) = PT (map mogrify . f)
+commitTo : Monad m => ParserT m str a -> ParserT m str a
+commitTo (PT f) = PT (map mogrify . f)
   where
     mogrify : Result str a -> Result str a
     mogrify (Success s x ) = Success s x
