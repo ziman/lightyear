@@ -19,5 +19,5 @@ sepBy p s = (p `sepBy1` s) <|> pure []
 alternating : Monad m => ParserT m str a -> ParserT m str a -> ParserT m str (List a)
 alternating p s = [| p :: lazy (alternating s p) |] <|> pure []
 
-skip : ParserT m str a -> ParserT m str ()
+skip : Monad m => ParserT m str a -> ParserT m str ()
 skip = map (const ())
