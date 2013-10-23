@@ -26,6 +26,10 @@ private
 (<?->) : Monad m => ParserT m str a -> String -> ParserT m str a
 p <?-> msg = p <??> (Lib, msg)
 
+private
+c2s : Char -> String
+c2s c = pack (c :: [])
+
 satisfy : Monad m => (Char -> Bool) -> ParserT m String Char
 satisfy = satisfy' (St uncons)
 

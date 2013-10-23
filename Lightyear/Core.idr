@@ -2,23 +2,15 @@ module Lightyear.Core
 
 %access public
 
-data Tag =
-    Lib   -- syntax elements from this library
-  | User  -- solely user-defined elements (none found here)
-  | Mod   -- modifiers/extenders, like many, some, parens, ...
-
-instance Show Tag where
-  show Lib  = "Lib"
-  show User = "User"
-  show Mod  = "Mod"
+data Commitment = Committed | Uncommitted
 
 data Result str a =
     Success str a
-  | Failure (List (Tag, str, String)) -- a stacktrace of errors based on <??> and friends
+  | Failure Commitment (List (str, String)) -- a stacktrace of errors based on <??> and friends
 
 instance Functor (Result str) where
-  map f (Success s x) = Success s (f x)
-  map f (Failure es ) = Failure es
+  map f (Success s x ) = Success s (f x)
+  map f (Failure c es) = Failure c es
 
 record ParserT : (m : Type -> Type) -> (str : Type) -> (a : Type) -> Type where
   PT : (runParserT : str -> m (Result str a)) -> ParserT m str a
@@ -32,21 +24,16 @@ instance Monad m => Applicative (ParserT m str) where
   -- Beware! the following function must NOT pattern-match
   -- on its second argument right away because it might be lazy.
   (<$>) (PT f) x = PT $ \s => f s >>= \f' => case f' of
-    Failure es   => pure (Failure es)
+    Failure c es => pure (Failure c es)
     Success s' g => let PT x' = x in map (map g) (x' s')
 
 instance Monad m => Monad (ParserT m str) where
   (>>=) (PT x) f = PT $ \s => x s >>= \r => case r of
-    Failure es   => pure (Failure es)
+    Failure c es => pure (Failure c es)
     Success s' y => let PT f' = f y in f' s'
 
 fail : str -> String -> Result str a
-fail s msg = Failure ((Lib, s, msg) :: [])
-
--- include error stack from the other alternative branch
-altError : Monad m => List (Tag, str, String) -> Result str a -> Result str a
-altError es (Success s x) = Success s x
-altError es (Failure es') = Failure es'  -- TODO
+fail s msg = Failure Uncommitted ((s, msg) :: [])
 
 instance Monad m => Alternative (ParserT m str) where
   empty = PT (\s => pure . fail s $ "non-empty alternative")
@@ -55,34 +42,28 @@ instance Monad m => Alternative (ParserT m str) where
   -- on its second argument right away because it might be lazy.
   (<|>) (PT x) y = PT $ \s => x s >>= \r => case r of
     Success s' x' => pure (Success s' x')
-    Failure es    => let PT y' = y in map (altError es) (y' s)
+    Failure Committed   es => pure $ Failure Committed es
+    Failure Uncommitted es => let PT y' = y in y' s
 
-infixl 0 <??>
-(<??>) : Monad m => ParserT m str a -> (Tag, String) -> ParserT m str a
-(PT f) <??> (t, msg) = PT $ \s => f s >>= \r => case r of
-   Failure es  => pure $ Failure ((t, s, msg) :: es)
-   Success s x => pure $ Success s x
-
--- should take a noun: (many) "element"
 infixl 0 <?>
 (<?>) : Monad m => ParserT m str a -> String -> ParserT m str a
-p <?> msg = p <??> (User, msg)
+(PT f) <?> msg = PT $ \s => map (mogrify s) (f s)
+  where
+    mogrify : str ->  Result str a -> Result str a
+    mogrify s (Failure c es) = Failure c ((s, msg) :: es)
+    mogrify s (Success s x ) = Success s x
 
--- should take an adjective: "many" (elements)
-infixl 0 <?+>
-(<?+>) : Monad m => ParserT m str a -> String -> ParserT m str a
-p <?+> msg = p <??> (Mod, msg)
-
-c2s : Char -> String
-c2s c = pack (c :: [])
-
-skip : Functor f => f a -> f ()
-skip = map (const ())
+commit : Monad m => ParserT m str a -> ParserT m str a
+commit (PT f) = PT (map mogrify . f)
+  where
+    mogrify : Result str a -> Result str a
+    mogrify (Success s x ) = Success s x
+    mogrify (Failure _ es) = Failure Committed es
 
 record Stream : Type -> Type -> Type where
   St : (uncons : str -> Maybe (tok, str)) -> Stream tok str
 
-satisfy' : (Monad m) => Stream tok str -> (tok -> Bool) -> ParserT m str tok
+satisfy' : Monad m => Stream tok str -> (tok -> Bool) -> ParserT m str tok
 satisfy' (St uncons) p = PT $ \s => pure $ case uncons s of
   Nothing => fail s $ "<???:1>"
   Just (t, s') => case p t of
