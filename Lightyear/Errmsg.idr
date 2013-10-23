@@ -19,8 +19,13 @@ rowcol       []        xs  = (0,0)  -- should not happen
 formatItem : Layout str => str -> (str, String) -> String
 formatItem whole (rest, msg)
   = let (row, col) = rowcol (reverse $ lineLengths whole) (reverse $ lineLengths rest)
-    in "at " ++ show row ++ ":" ++ show col ++ ":\n" ++ msg ++ "\n"
+    in "at " ++ show row ++ ":" ++ show col ++ " expected:\n  " ++ msg
+
+unlines : List String -> String
+unlines []  = ""
+unlines [s] = s
+unlines (s :: ss) = s ++ "\n" ++ unlines ss
 
 public
 formatError : Layout str => str -> List (str, String) -> String
-formatError whole = concat . map (formatItem whole)
+formatError whole = unlines . map (formatItem whole)

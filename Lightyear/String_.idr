@@ -53,3 +53,8 @@ token s = skip (string s) <$ space <?> "token " ++ show s
 
 parens : Monad m => ParserT m String a -> ParserT m String a
 parens p = char '(' $> p <$ char ')'
+
+test : Parser a -> String -> IO (Maybe a)
+test p s = case parse p s of
+  Left  e => putStrLn e $> pure Nothing
+  Right x => pure (Just x)

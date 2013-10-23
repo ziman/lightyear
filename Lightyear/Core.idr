@@ -6,7 +6,7 @@ data Commitment = Committed | Uncommitted
 
 data Result str a =
     Success str a
-  | Failure Commitment (List (str, String)) -- a stacktrace of errors based on <??> and friends
+  | Failure Commitment (List (str, String)) -- a stacktrace of errors based on <?> and friends
 
 instance Functor (Result str) where
   map f (Success s x ) = Success s (f x)
@@ -50,8 +50,8 @@ infixl 0 <?>
 (PT f) <?> msg = PT $ \s => map (mogrify s) (f s)
   where
     mogrify : str ->  Result str a -> Result str a
-    mogrify s (Failure c es) = Failure c ((s, msg) :: es)
-    mogrify s (Success s x ) = Success s x
+    mogrify s (Failure c  es) = Failure c ((s, msg) :: es)
+    mogrify s (Success s' x ) = Success s' x
 
 commitTo : Monad m => ParserT m str a -> ParserT m str a
 commitTo (PT f) = PT (map mogrify . f)
@@ -65,7 +65,7 @@ record Stream : Type -> Type -> Type where
 
 satisfy' : Monad m => Stream tok str -> (tok -> Bool) -> ParserT m str tok
 satisfy' (St uncons) p = PT $ \s => pure $ case uncons s of
-  Nothing => fail s $ "<???:1>"
+  Nothing => fail s $ "a character, not EOF"
   Just (t, s') => case p t of
     True  => Success s' t
-    False => fail s $ "<???:2>"
+    False => fail s $ "a different character"
