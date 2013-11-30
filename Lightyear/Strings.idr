@@ -1,6 +1,4 @@
-module Lightyear.String_
--- Reserved words cannot be used in module names.
--- Unfortunately, String is a reserved word.
+module Lightyear.Strings
 
 import Control.Monad.Identity
 
@@ -34,7 +32,7 @@ uncons s with (strM s)
 
 private
 c2s : Char -> String
-c2s c = pack (c :: [])
+c2s c = pack (c :: Prelude.List.Nil)
 
 satisfy : Monad m => (Char -> Bool) -> ParserT m String Char
 satisfy = satisfy' (St uncons)

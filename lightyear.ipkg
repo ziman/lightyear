@@ -1,2 +1,2 @@
 package lightyear
-modules = Lightyear.Core, Lightyear.Combinators, Lightyear.Errmsg, Lightyear.String_
+modules = Lightyear.Core, Lightyear.Combinators, Lightyear.Errmsg, Lightyear.Strings

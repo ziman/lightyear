@@ -1,24 +1,24 @@
 # Lightyear
 
-Parser combinator library for Idris,
+Lightweight parser combinator library for Idris,
 inspired by [Parsec](http://hackage.haskell.org/package/parsec).
 
 Module overview:
 * `Lightyear.Core`: central definitions + instances
 * `Lightyear.Errmsg`: error message formatting, mainly internal library
 * `Lightyear.Combinator`: generic combinators like `many` or `sepBy`
-* `Lightyear.String_`: string-bound parsers like `char` or `space`
+* `Lightyear.Strings`: string-bound parsers like `char` or `space`
 
 ## Synopsis
 
-This package is used (almost) the same way as Parsec would be, except for one difference.
+This package is used (almost) the same way as Parsec, except for one difference: backtracking.
 
 ### Commitment
 * Parsec combinators
   won't backtrack if a branch of `<|>` has consumed any input, hence Parsec
   parsers require an explicit `try`.
 
-* Lightyear combinators are backtrack-by-default and there is
+* Lightyear parsers are backtrack-by-default and there is
   the `commitTo` combinator that makes the parser commit to that branch.
 
 In other words, the following two pieces of code are equivalent (using illustrative combinator names):
@@ -48,7 +48,7 @@ For convenience, `commitTo` is merged in monadic and applicative operators,
 yielding the operators `>!=`, `>!`, `<$!>`, `<$!`, and `$!>`.
 The `!` in the names is inspired by the notation used for cuts in Prolog.
 
-A combinator that uses commitment might look like this (notice the leading
+A parser that uses commitment might look like this (notice the leading
 `char '@'` that leads to commitment):
 ```haskell
 entry : Parser Entry
