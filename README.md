@@ -38,7 +38,7 @@ elem = (string "0x" >> commitTo hexNumber) <|> string "0123"
 ```
 
 After reading the prefix `0x`, both parsers commit to reading a hexadecimal number
-or nothing at all — Parsec does this automatically, Lightyear uses a commitTo combinator
+or nothing at all — Parsec does this automatically, Lightyear uses the `commitTo` combinator
 for this purpose.
 On the other hand, Parsec requires the `string "0x"` to be wrapped in `try` because
 if we are reading `0123`, we definitely don't want to commit to the left branch
