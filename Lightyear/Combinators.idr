@@ -7,6 +7,10 @@ import Lightyear.Core
 many : Monad m => ParserT m str a -> ParserT m str (List a)
 many p = [| p :: lazy (many p) |] <|> pure []
 
+ntimes : Monad m => (n : Nat) -> ParserT m str a -> ParserT m str (Vect n a)
+ntimes Z     p = pure []
+ntimes (S n) p = [| p :: ntimes n p |]
+
 some : Monad m => ParserT m str a -> ParserT m str (List a)
 some p = [| p :: many p |]
 
@@ -15,6 +19,11 @@ sepBy1 p s = [| p :: many (s $> p) |]
 
 sepBy : Monad m => ParserT m str a -> ParserT m str b -> ParserT m str (List a)
 sepBy p s = (p `sepBy1` s) <|> pure []
+
+sepByN : Monad m => (n : Nat) -> ParserT m str a -> ParserT m str b -> ParserT m str (Vect n a)
+sepByN Z     p s = pure []
+sepByN (S n) p s = [| p :: ntimes n (s $> p) |]
+
 
 alternating : Monad m => ParserT m str a -> ParserT m str a -> ParserT m str (List a)
 alternating p s = [| p :: lazy (alternating s p) |] <|> pure []
