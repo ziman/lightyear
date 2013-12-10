@@ -33,10 +33,6 @@ uncons s with (strM s)
   uncons ""             | StrNil       = Nothing
   uncons (strCons x xs) | StrCons x xs = Just (x, xs)
 
-private
-c2s : Char -> String
-c2s c = pack (c :: Prelude.List.Nil)
-
 satisfy : Monad m => (Char -> Bool) -> ParserT m String Char
 satisfy = satisfy' (St uncons)
 
@@ -44,7 +40,7 @@ satisfyMaybe : Monad m => (Char -> Maybe out) -> ParserT m String out
 satisfyMaybe = satisfyMaybe' (St uncons)
 
 char : Monad m => Char -> ParserT m String ()
-char c = skip (satisfy (== c)) <?> "character '" ++ c2s c ++ "'"
+char c = skip (satisfy (== c)) <?> "character '" ++ singleton c ++ "'"
 
 string : Monad m => String -> ParserT m String ()
 string s = traverse_ char (unpack s) <?> "string " ++ show s
@@ -80,6 +76,8 @@ integer = do ds <- some digit
         getInteger []      = 0 -- will never happen because "some" always finds at least one elt
         getInteger [d]     = cast d
         getInteger (d::ds) = 10 * cast d + getInteger ds
+
+
 
 test : Parser a -> String -> IO (Maybe a)
 test p s = case parse p s of

@@ -25,6 +25,9 @@ alternating p s = [| p :: lazy (alternating s p) |] <|> pure []
 skip : Monad m => ParserT m str a -> ParserT m str ()
 skip = map (const ())
 
+opt : Monad m => ParserT m str a -> ParserT m str (Maybe a)
+opt p = map Just p <|> pure Nothing
+
 -- the following names are inspired by the cut operator from Prolog
 
 -- Monad-like operators
