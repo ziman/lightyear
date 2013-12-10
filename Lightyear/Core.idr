@@ -69,3 +69,10 @@ satisfy' (St uncons) p = PT $ \s => pure $ case uncons s of
   Just (t, s') => case p t of
     True  => Success s' t
     False => fail s $ "a different character"
+
+satisfyMaybe' : Monad m => Stream tok str -> (tok -> Maybe out) -> ParserT m str out
+satisfyMaybe' (St uncons) f = PT $ \s => pure $ case uncons s of
+  Nothing => fail s $ "a character, not EOF"
+  Just (t, s') => case f t of
+    Just res => Success s' res
+    Nothing => fail s $ "a different character"

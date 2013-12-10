@@ -37,6 +37,9 @@ c2s c = pack (c :: Prelude.List.Nil)
 satisfy : Monad m => (Char -> Bool) -> ParserT m String Char
 satisfy = satisfy' (St uncons)
 
+satisfyMaybe : Monad m => (Char -> Maybe out) -> ParserT m String out
+satisfyMaybe = satisfyMaybe' (St uncons)
+
 char : Monad m => Char -> ParserT m String ()
 char c = skip (satisfy (== c)) <?> "character '" ++ c2s c ++ "'"
 
@@ -51,6 +54,29 @@ token s = skip (string s) <$ space <?> "token " ++ show s
 
 parens : Monad m => ParserT m String a -> ParserT m String a
 parens p = char '(' $> p <$ char ')'
+
+digit : Monad m => ParserT m String (Fin 10)
+digit = satisfyMaybe fromChar
+  where fromChar : Char -> Maybe (Fin 10)
+        fromChar '0' = Just fZ
+        fromChar '1' = Just (fS (fZ))
+        fromChar '2' = Just (fS (fS (fZ)))
+        fromChar '3' = Just (fS (fS (fS (fZ))))
+        fromChar '4' = Just (fS (fS (fS (fS (fZ)))))
+        fromChar '5' = Just (fS (fS (fS (fS (fS (fZ))))))
+        fromChar '6' = Just (fS (fS (fS (fS (fS (fS (fZ)))))))
+        fromChar '7' = Just (fS (fS (fS (fS (fS (fS (fS (fZ))))))))
+        fromChar '8' = Just (fS (fS (fS (fS (fS (fS (fS (fS (fZ)))))))))
+        fromChar '9' = Just (fS (fS (fS (fS (fS (fS (fS (fS (fS (fZ))))))))))
+        fromChar _   = Nothing
+
+integer : (Num n, Monad m) => ParserT m String n
+integer = do ds <- some digit
+             pure (fromInteger (getInteger ds))
+  where getInteger : List (Fin 10) -> Integer
+        getInteger []      = 0 -- will never happen because "some" always finds at least one elt
+        getInteger [d]     = cast d
+        getInteger (d::ds) = 10 * cast d + getInteger ds
 
 test : Parser a -> String -> IO (Maybe a)
 test p s = case parse p s of
