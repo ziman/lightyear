@@ -68,3 +68,6 @@ $ #idris --clean lightyear.ipkg
 $ idris --build lightyear.ipkg
 $ idris --install lightyear.ipkg
 ```
+
+## Example
+Lightyear is used in <a href="https://github.com/ziman/bibdris/blob/master/Bibtex.idr">bibdris</a>
