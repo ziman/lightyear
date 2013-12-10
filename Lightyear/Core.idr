@@ -66,16 +66,12 @@ commitTo (PT f) = PT (map mogrify . f)
 record Stream : Type -> Type -> Type where
   St : (uncons : str -> Maybe (tok, str)) -> Stream tok str
 
-satisfy' : Monad m => Stream tok str -> (tok -> Bool) -> ParserT m str tok
-satisfy' (St uncons) p = PT $ \s => pure $ case uncons s of
-  Nothing => fail s $ "a character, not EOF"
-  Just (t, s') => case p t of
-    True  => Success s' t
-    False => fail s $ "a different character"
-
 satisfyMaybe' : Monad m => Stream tok str -> (tok -> Maybe out) -> ParserT m str out
 satisfyMaybe' (St uncons) f = PT $ \s => pure $ case uncons s of
-  Nothing => fail s $ "a character, not EOF"
+  Nothing => fail s $ "a token, not EOF"
   Just (t, s') => case f t of
     Just res => Success s' res
-    Nothing => fail s $ "a different character"
+    Nothing => fail s $ "a different token"
+
+satisfy' : Monad m => Stream tok str -> (tok -> Bool) -> ParserT m str tok
+satisfy' st p = satisfyMaybe' st (\t => if p t then Just t else Nothing)
