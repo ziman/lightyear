@@ -1,5 +1,8 @@
 module Lightyear.Core
 
+-- This code is distributed under the BSD 2-clause license.
+-- See the file LICENSE in the root directory for its full text.
+
 %access public
 
 data Commitment = Committed | Uncommitted

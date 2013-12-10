@@ -1,5 +1,8 @@
 module Lightyear.Combinators
 
+-- This code is distributed under the BSD 2-clause license.
+-- See the file LICENSE in the root directory for its full text.
+
 import Lightyear.Core
 
 %access public
