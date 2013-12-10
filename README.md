@@ -64,7 +64,7 @@ entry = char '@' >! do
 
 ## Build
 ```bash
-$ #idris --clean lightyear.idr
-$ idris --build lightyear.idr
-$ idris --install lightyear.idr
+$ #idris --clean lightyear.ipkg
+$ idris --build lightyear.ipkg
+$ idris --install lightyear.ipkg
 ```
