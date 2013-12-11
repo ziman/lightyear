@@ -70,8 +70,12 @@ digit = satisfyMaybe fromChar
         fromChar _   = Nothing
 
 integer : (Num n, Monad m) => ParserT m String n
-integer = do ds <- some digit
-             pure (fromInteger (getInteger ds))
+integer = do minus <- opt (char '-')
+             ds <- some digit
+             let theInt = getInteger ds
+             case minus of
+               Nothing => pure (fromInteger theInt)
+               Just () => pure (fromInteger ((-1) * theInt))
   where getInteger : List (Fin 10) -> Integer
         getInteger []      = 0 -- will never happen because "some" always finds at least one elt
         getInteger [d]     = cast d
