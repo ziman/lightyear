@@ -77,9 +77,7 @@ integer = do minus <- opt (char '-')
                Nothing => pure (fromInteger theInt)
                Just () => pure (fromInteger ((-1) * theInt))
   where getInteger : List (Fin 10) -> Integer
-        getInteger []      = 0 -- will never happen because "some" always finds at least one elt
-        getInteger [d]     = cast d
-        getInteger (d::ds) = 10 * cast d + getInteger ds
+        getInteger = foldl (\a => \b => 10 * a + cast b) 0
 
 
 
