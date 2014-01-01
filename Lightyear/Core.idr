@@ -5,73 +5,76 @@ module Lightyear.Core
 
 %access public
 
-data Commitment = Committed | Uncommitted
-
 data Result str a =
     Success str a
-  | Failure Commitment (List (str, String)) -- a stacktrace of errors based on <?> and friends
+  | Failure (List (str, String)) -- a stacktrace of errors based on <?> and friends
 
 instance Functor (Result str) where
   map f (Success s x ) = Success s (f x)
-  map f (Failure c es) = Failure c es
+  map f (Failure es) = Failure es
 
 record ParserT : (m : Type -> Type) -> (str : Type) -> (a : Type) -> Type where
-  PT : (runParserT : str -> m (Result str a)) -> ParserT m str a
+  PT : (runParserT : (r : Type) ->
+                     (a -> str -> m r) -> -- uncommitted success
+                     (a -> str -> m r) -> -- committed success
+                     (List (str, String) -> m r) -> -- uncommitted error
+                     (List (str, String) -> m r) -> -- committed error
+                     str -> m r) -> ParserT m str a
+
+execParserT : Monad m => ParserT m str a -> str -> m (Result str a)
+execParserT {m} {str} {a} (PT p) i = p (Result str a) success success failure failure i
+  where success x i = pure $ Success i x
+        failure = pure . Failure
 
 instance Monad m => Functor (ParserT m str) where
-  map f (PT p) = PT (map (map f) . p)
+  map {a} {b} f (PT p) = PT $ \r => \us => \cs => p r (us . f) (cs . f)
 
 instance Monad m => Applicative (ParserT m str) where
-  pure x = PT (\s => pure (Success s x))
+  pure x = PT (\r => \us => \cs => \ue => \ce => us x)
 
   -- Beware! the following function must NOT pattern-match
   -- on its second argument right away because it might be lazy.
-  (<$>) (PT f) x = PT $ \s => f s >>= \f' => case f' of
-    Failure c es => pure (Failure c es)
-    Success s' g => let PT x' = x in map (map g) (x' s')
+  (<$>) (PT f) x = PT $ \r => \us => \cs => \ue => \ce =>
+    f r (\f' => let PT g = x in g r (us . f') (cs . f') ue ce)
+        (\f' => let PT g = x in g r (cs . f') (cs . f') ce ce)
+        ue ce
 
 instance Monad m => Monad (ParserT m str) where
-  (>>=) (PT x) f = PT $ \s => x s >>= \r => case r of
-    Failure c es => pure (Failure c es)
-    Success s' y => let PT f' = f y in f' s'
+  (>>=) (PT x) f = PT $ \r => \us => \cs => \ue => \ce =>
+    x r (\x' => let PT y = f x' in y r us cs ue ce)
+        (\x' => let PT y = f x' in y r cs cs ce ce)
+        ue ce
 
-fail : str -> String -> Result str a
-fail s msg = Failure Uncommitted ((s, msg) :: [])
+fail : String -> ParserT m str a
+fail msg = PT $ \r => \us => \cs => \ue => \ce => \i => ue [(i, msg)]
 
 instance Monad m => Alternative (ParserT m str) where
-  empty = PT (\s => pure . fail s $ "non-empty alternative")
+  empty = fail "non-empty alternative"
 
   -- Beware! the following function must NOT pattern-match
   -- on its second argument right away because it might be lazy.
-  (<|>) (PT x) y = PT $ \s => x s >>= \r => case r of
-    Success s' x' => pure (Success s' x')
-    Failure Committed   es => pure $ Failure Committed es
-    Failure Uncommitted es => let PT y' = y in y' s
+  (<|>) (PT x) y = PT $ \r => \us => \cs => \ue => \ce => \i =>
+    x r us cs (\err => let PT y' = y in y' r us cs (ue . (err ++))
+                                                   (ce . (err ++)) i) ce i
 
 infixl 0 <?>
 (<?>) : Monad m => ParserT m str a -> String -> ParserT m str a
-(PT f) <?> msg = PT $ \s => map (mogrify s) (f s)
-  where
-    mogrify : str ->  Result str a -> Result str a
-    mogrify s (Failure c  es) = Failure c ((s, msg) :: es)
-    mogrify s (Success s' x ) = Success s' x
+(PT f) <?> msg = PT $ \r => \us => \cs => \ue => \ce => \i =>
+  f r us cs (ue . ((i, msg) ::)) (ce . ((i, msg) ::)) i
 
 commitTo : Monad m => ParserT m str a -> ParserT m str a
-commitTo (PT f) = PT (map mogrify . f)
-  where
-    mogrify : Result str a -> Result str a
-    mogrify (Success s x ) = Success s x
-    mogrify (Failure _ es) = Failure Committed es
+commitTo (PT f) = PT $ \r => \us => \cs => \ue => \ce => f r cs cs ce ce
 
 record Stream : Type -> Type -> Type where
   St : (uncons : str -> Maybe (tok, str)) -> Stream tok str
 
 satisfyMaybe' : Monad m => Stream tok str -> (tok -> Maybe out) -> ParserT m str out
-satisfyMaybe' (St uncons) f = PT $ \s => pure $ case uncons s of
-  Nothing => fail s $ "a token, not EOF"
-  Just (t, s') => case f t of
-    Just res => Success s' res
-    Nothing => fail s $ "a different token"
+satisfyMaybe' (St uncons) f = PT $ \r => \us => \cs => \ue => \ce => \i =>
+  case uncons i of
+    Nothing      => ue [(i, "a token, not EOF")]
+    Just (t, i') => case f t of
+      Nothing  => ue [(i, "a different token")]
+      Just res => us res i'
 
 satisfy' : Monad m => Stream tok str -> (tok -> Bool) -> ParserT m str tok
 satisfy' st p = satisfyMaybe' st (\t => if p t then Just t else Nothing)

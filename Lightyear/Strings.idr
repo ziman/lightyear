@@ -23,9 +23,9 @@ Parser : Type -> Type
 Parser = ParserT Identity String
 
 parse : Parser a -> String -> Either String a
-parse (PT f) s = let Id r = f s in case r of
-  Success _ x  => Right x
-  Failure _ es => Left $ formatError s es
+parse f s = let Id r = execParserT f s in case r of
+  Success _ x => Right x
+  Failure es  => Left $ formatError s es
 
 private
 uncons : String -> Maybe (Char, String)
