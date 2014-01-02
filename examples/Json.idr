@@ -1,4 +1,4 @@
-module Main
+module Json
 
 import Lightyear.Core
 import Lightyear.Combinators
@@ -87,13 +87,13 @@ jsonNull = (char 'n' >! string "ull" >! return ()) <?> "JSON Null"
 
 mutual
   jsonArray : Parser (List JsonValue)
-  jsonArray = char '[' $!> (jsonValue `sepBy` (char ',')) <$ char ']'
+  jsonArray = char '[' $!> ((lazy jsonValue) `sepBy` (char ',')) <$ char ']'
 
   keyValuePair : Parser (String, JsonValue)
   keyValuePair = do
     key <- space $> jsonString <$ space
     char ':'
-    value <- jsonValue
+    value <- lazy jsonValue
     pure (key, value)
 
   jsonObject : Parser (SortedMap String JsonValue)
