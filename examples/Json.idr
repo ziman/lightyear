@@ -56,7 +56,7 @@ jsonString = char '"' $> map pack jsonString' <?> "JSON string"
 -- inspired by Haskell's Data.Scientific module
 record Scientific : Type where
   MkScientific : (coefficient : Integer) ->
-                 (expontent : Integer) -> Scientific
+                 (exponent : Integer) -> Scientific
 
 scientificToFloat : Scientific -> Float
 scientificToFloat (MkScientific c e) = fromInteger c * exp
