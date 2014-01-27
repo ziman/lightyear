@@ -64,11 +64,11 @@ scientificToFloat (MkScientific c e) = fromInteger c * exp
                        else pow 10 (fromIntegerNat e)
 
 parseScientific : Parser Scientific
-parseScientific = do sign <- map (maybe 1 (const (-1))) $ opt (char '-')
+parseScientific = do sign <- maybe 1 (const (-1)) `map` opt (char '-')
                      digits <- some digit
-                     hasComma <- map isJust $ opt (char '.')
+                     hasComma <- isJust `map` opt (char '.')
                      decimals <- if hasComma then some digit else pure []
-                     hasExponent <- map isJust $ opt (char 'e')
+                     hasExponent <- isJust `map` opt (char 'e')
                      exponent <- if hasExponent then integer else pure 0
                      pure $ MkScientific (sign * fromDigits (digits ++ decimals))
                                          (exponent - cast (length decimals))
