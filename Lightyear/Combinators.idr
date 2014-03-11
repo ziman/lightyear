@@ -7,29 +7,38 @@ import Lightyear.Core
 
 %access public
 
+infixr 3 :::
+private
+(:::) : a -> List a -> List a
+(:::) x xs = x :: xs
+
+infixr 3 ::.
+private
+(::.) : a -> Vect n a -> Vect (S n) a
+(::.) x xs = x :: xs
+
 many : Monad m => ParserT m str a -> ParserT m str (List a)
-many p = [| p :: lazy (many p) |] <|> pure []
+many p = [| p ::: lazy (many p) |] <|> pure List.Nil
 
 ntimes : Monad m => (n : Nat) -> ParserT m str a -> ParserT m str (Vect n a)
-ntimes Z     p = pure []
-ntimes (S n) p = [| p :: ntimes n p |]
+ntimes Z     p = pure Vect.Nil
+ntimes (S n) p = [| p ::. ntimes n p |]
 
 some : Monad m => ParserT m str a -> ParserT m str (List a)
-some p = [| p :: many p |]
+some p = [| p ::: many p |]
 
 sepBy1 : Monad m => ParserT m str a -> ParserT m str b -> ParserT m str (List a)
-sepBy1 p s = [| p :: many (s $> p) |]
+sepBy1 p s = [| p ::: many (s $> p) |]
 
 sepBy : Monad m => ParserT m str a -> ParserT m str b -> ParserT m str (List a)
-sepBy p s = (p `sepBy1` s) <|> pure []
+sepBy p s = (p `sepBy1` s) <|> pure List.Nil
 
 sepByN : Monad m => (n : Nat) -> ParserT m str a -> ParserT m str b -> ParserT m str (Vect n a)
-sepByN Z     p s = pure []
-sepByN (S n) p s = [| p :: ntimes n (s $> p) |]
-
+sepByN Z     p s = pure Vect.Nil
+sepByN (S n) p s = [| p ::. ntimes n (s $> p) |]
 
 alternating : Monad m => ParserT m str a -> ParserT m str a -> ParserT m str (List a)
-alternating p s = [| p :: lazy (alternating s p) |] <|> pure []
+alternating p s = [| p ::: lazy (alternating s p) |] <|> pure List.Nil
 
 skip : Monad m => ParserT m str a -> ParserT m str ()
 skip = map (const ())
