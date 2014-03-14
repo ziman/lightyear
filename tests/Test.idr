@@ -21,3 +21,4 @@ main = do
   test (listOf nat) "[1,2,3,99]"
   test (listOf nat) "foo"
   test (listOf nat <|> (string "[foo" $> pure List.Nil)) "[foo"  -- should commit and fail
+  test (listOf $ listOf nat) "[[1,2],[],[3,4,5]]"

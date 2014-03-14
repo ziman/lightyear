@@ -12,3 +12,4 @@ at 1:2 expected:
   character ']'
 at 1:2 expected:
   a different token
+[[1, 2], [], [3, 4, 5]]
