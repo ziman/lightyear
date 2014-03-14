@@ -5,9 +5,15 @@ die() {
 	exit 1
 }
 
-rm -f *.ibc test
+rm -f *.ibc test output
 
 idris Test.idr -p lightyear -o test || die "could not compile tests"
-./test || die "could not run tests"
+timeout 5s ./test > output || die "test failed or timed out"
 
-rm -f *.ibc test
+if diff output expected; then
+	echo "### PASS ###"
+else
+	echo "### FAIL ###"
+fi
+
+rm -f *.ibc test output
