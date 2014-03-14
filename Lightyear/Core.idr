@@ -32,9 +32,17 @@ instance Monad m => Functor (ParserT m str) where
 instance Monad m => Applicative (ParserT m str) where
   pure x = PT (\r => \us => \cs => \ue => \ce => us x)
 
-  -- Beware! the following function must NOT pattern-match
-  -- on its second argument right away because it might be lazy.
-  (<$>) (PT f) x = PT $ \r => \us => \cs => \ue => \ce =>
+  (<$>) (PT f) (PT g) = PT $ \r => \us => \cs => \ue => \ce =>
+    f r (\f' => g r (us . f') (cs . f') ue ce)
+        (\f' => g r (cs . f') (cs . f') ce ce)
+        ue ce
+
+-- A variant of <$>, lazy in its second argument,
+-- which must NOT be pattern-matched right away
+-- because we want to keep it lazy in case it's not used.
+infixl 2 <$>|
+(<$>|) : Monad m => ParserT m str (a -> b) -> Lazy (ParserT m str a) -> ParserT m str b
+(<$>|) (PT f) x = PT $ \r => \us => \cs => \ue => \ce =>
     f r (\f' => let PT g = x in g r (us . f') (cs . f') ue ce)
         (\f' => let PT g = x in g r (cs . f') (cs . f') ce ce)
         ue ce
@@ -51,11 +59,18 @@ fail msg = PT $ \r => \us => \cs => \ue => \ce => \i => ue [(i, msg)]
 instance Monad m => Alternative (ParserT m str) where
   empty = fail "non-empty alternative"
 
-  -- Beware! the following function must NOT pattern-match
-  -- on its second argument right away because it might be lazy.
-  (<|>) (PT x) y = PT $ \r => \us => \cs => \ue => \ce => \i =>
-    x r us cs (\err => let PT y' = y in y' r us cs (ue . (err ++))
-                                                   (ce . (err ++)) i) ce i
+  (<|>) (PT x) (PT y) = PT $ \r => \us => \cs => \ue => \ce => \i =>
+    x r us cs (\err => y r us cs (ue . (err ++))
+                                 (ce . (err ++)) i) ce i
+
+-- A variant of <|>, lazy in its second argument,
+-- which must NOT be pattern-matched right away
+-- because we want to keep it lazy in case it's not used.
+infixl 3 <|>|
+(<|>|) : Monad m => ParserT m str a -> ParserT m str a -> ParserT m str a
+(<|>|) (PT x) y = PT $ \r => \us => \cs => \ue => \ce => \i =>
+  x r us cs (\err => let PT y' = y in y' r us cs (ue . (err ++))
+                                                 (ce . (err ++)) i) ce i
 
 infixl 0 <?>
 (<?>) : Monad m => ParserT m str a -> String -> ParserT m str a

@@ -7,8 +7,11 @@ die() {
 
 rm -f *.ibc test output
 
-idris Test.idr -p lightyear -o test || die "could not compile tests"
-timeout 5s ./test > output || die "test failed or timed out"
+echo "compiling..."
+idris Test.idr -p lightyear -o test || die "* could not compile tests *"
+echo "compiled OK"
+
+timeout 5s ./test > output || die "* test failed or timed out *"
 
 if diff output expected; then
 	echo "### PASS ###"

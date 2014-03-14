@@ -18,10 +18,10 @@ private
 (::.) x xs = x :: xs
 
 many : Monad m => ParserT m str a -> ParserT m str (List a)
-many p = [| p ::: many p |] <|> pure List.Nil
+many p = (pure (:::) <$> p <$>| many p) <|> pure List.Nil
 
 ntimes : Monad m => (n : Nat) -> ParserT m str a -> ParserT m str (Vect n a)
-ntimes Z     p = pure Vect.Nil
+ntimes    Z  p = pure Vect.Nil
 ntimes (S n) p = [| p ::. ntimes n p |]
 
 some : Monad m => ParserT m str a -> ParserT m str (List a)
@@ -34,11 +34,11 @@ sepBy : Monad m => ParserT m str a -> ParserT m str b -> ParserT m str (List a)
 sepBy p s = (p `sepBy1` s) <|> pure List.Nil
 
 sepByN : Monad m => (n : Nat) -> ParserT m str a -> ParserT m str b -> ParserT m str (Vect n a)
-sepByN Z     p s = pure Vect.Nil
+sepByN    Z  p s = pure Vect.Nil
 sepByN (S n) p s = [| p ::. ntimes n (s $> p) |]
 
 alternating : Monad m => ParserT m str a -> ParserT m str a -> ParserT m str (List a)
-alternating p s = [| p ::: alternating s p |] <|> pure List.Nil
+alternating p s = (pure (:::) <$> p <$>| alternating s p) <|> pure List.Nil
 
 skip : Monad m => ParserT m str a -> ParserT m str ()
 skip = map (const ())
