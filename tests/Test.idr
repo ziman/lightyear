@@ -9,6 +9,15 @@ test p input = case parse p input of
   Left  e => putStrLn e
   Right x => print x
 
+listOf : Parser a -> Parser (List a)
+listOf p = string "[" $!> (p `sepBy` string ",") <$ string "]"
+
+nat : Parser Nat
+nat = integer
+
 main : IO ()
 main = do
-  test (the (Parser Nat) integer) "123"
+  test nat "123"
+  test (listOf nat) "[1,2,3,99]"
+  test (listOf nat) "foo"
+  test (listOf nat <|> (string "[foo" $> pure List.Nil)) "[foo"  -- should commit and fail

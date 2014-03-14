@@ -79,9 +79,7 @@ integer = do minus <- opt (char '-')
   where getInteger : List (Fin 10) -> Integer
         getInteger = foldl (\a => \b => 10 * a + cast b) 0
 
-
-
-test : Parser a -> String -> IO (Maybe a)
-test p s = case parse p s of
+testParser : Parser a -> String -> IO (Maybe a)
+testParser p s = case parse p s of
   Left  e => putStrLn e $> pure Nothing
   Right x => pure (Just x)

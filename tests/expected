@@ -1,1 +1,14 @@
 123
+[1, 2, 3, 99]
+at 1:1 expected:
+  string "["
+at 1:1 expected:
+  character '['
+at 1:1 expected:
+  a different token
+at 1:2 expected:
+  string "]"
+at 1:2 expected:
+  character ']'
+at 1:2 expected:
+  a different token
