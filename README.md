@@ -67,7 +67,7 @@ Lightyear is used to parse BibTeX in <a href="https://github.com/ziman/bibdris/b
 
 ## Build
 ```bash
-$ #idris --clean lightyear.ipkg
-$ idris --build lightyear.ipkg
-$ idris --install lightyear.ipkg
+$ make clean
+$ make test
+$ make install
 ```
