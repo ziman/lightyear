@@ -45,7 +45,7 @@ specialChar = do
     _    => satisfy (const False) <?> "expected special char"
 
 jsonString' : Parser (List Char)
-jsonString' = (char '"' $!> pure []) <|> do
+jsonString' = (char '"' $!> pure Prelude.List.Nil) <|> do
   c <- satisfy (/= '"')
   if (c == '\\') then map (::) specialChar <$> jsonString'
                  else map (c ::) jsonString'
@@ -67,7 +67,7 @@ parseScientific : Parser Scientific
 parseScientific = do sign <- maybe 1 (const (-1)) `map` opt (char '-')
                      digits <- some digit
                      hasComma <- isJust `map` opt (char '.')
-                     decimals <- if hasComma then some digit else pure []
+                     decimals <- if hasComma then some digit else pure Prelude.List.Nil
                      hasExponent <- isJust `map` opt (char 'e')
                      exponent <- if hasExponent then integer else pure 0
                      pure $ MkScientific (sign * fromDigits (digits ++ decimals))
