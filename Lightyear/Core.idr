@@ -75,7 +75,7 @@ infixl 3 <|>|
 ||| A variant of <|>, lazy in its second argument,
 ||| which must NOT be pattern-matched right away
 ||| because we want to keep it lazy in case it's not used.
-(<|>|) : Monad m => ParserT m str a -> ParserT m str a -> ParserT m str a
+(<|>|) : Monad m => ParserT m str a -> Lazy (ParserT m str a) -> ParserT m str a
 (<|>|) (PT x) y = PT $ \r, us, cs, ue, ce, i =>
   x r us cs (\err => let PT y' = y in y' r us cs (ue . (err ++))
                                                  (ce . (err ++)) i) ce i
