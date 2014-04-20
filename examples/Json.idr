@@ -15,6 +15,23 @@ data JsonValue = JsonString String
                | JsonArray (List JsonValue)
                | JsonObject (SortedMap String JsonValue)
 
+instance Show JsonValue where
+  show (JsonString s)   = show s
+  show (JsonNumber x)   = show x
+  show (JsonBool True ) = "true"
+  show (JsonBool False) = "false"
+  show  JsonNull        = "null"
+  show (JsonArray  xs)  = show xs
+  show (JsonObject xs)  =
+      "{" ++ intercalate ", " (map fmtItem $ SortedMap.toList xs) ++ "}"
+    where
+      intercalate : String -> List String -> String
+      intercalate sep [] = ""
+      intercalate sep [x] = x
+      intercalate sep (x :: xs) = x ++ sep ++ intercalate sep xs
+
+      fmtItem (k, v) = show k ++ ": " ++ show v
+
 hex : Parser Int
 hex = do
   c <- map (ord . toUpper) $ satisfy isHexDigit

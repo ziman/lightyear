@@ -13,3 +13,13 @@ at 1:2 expected:
 at 1:2 expected:
   a different token
 [[1, 2], [], [3, 4, 5]]
+{"hallo": 42, "nichts": null}
+error: at 1:1 expected:
+  character '['
+at 1:1 expected:
+  a different token
+at 1:2 expected:
+  character '}'
+at 1:2 expected:
+  a different token
+{"hello": [{"world": false}, 3, "string", true, null]}
