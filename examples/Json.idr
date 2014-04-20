@@ -45,7 +45,7 @@ specialChar = do
     _    => satisfy (const False) <?> "expected special char"
 
 jsonString' : Parser (List Char)
-jsonString' = (char '"' $!> pure []) <|> do
+jsonString' = (char '"' $!> pure Prelude.List.Nil) <|> do
   c <- satisfy (/= '"')
   if (c == '\\') then map (::) specialChar <$> jsonString'
                  else map (c ::) jsonString'
@@ -67,13 +67,13 @@ parseScientific : Parser Scientific
 parseScientific = do sign <- maybe 1 (const (-1)) `map` opt (char '-')
                      digits <- some digit
                      hasComma <- isJust `map` opt (char '.')
-                     decimals <- if hasComma then some digit else pure []
+                     decimals <- if hasComma then some digit else pure Prelude.List.Nil
                      hasExponent <- isJust `map` opt (char 'e')
                      exponent <- if hasExponent then integer else pure 0
                      pure $ MkScientific (sign * fromDigits (digits ++ decimals))
                                          (exponent - cast (length decimals))
   where fromDigits : List (Fin 10) -> Integer
-        fromDigits = foldl (\a => \b => 10 * a + cast b) 0
+        fromDigits = foldl (\a, b => 10 * a + cast b) 0
 
 jsonNumber : Parser Float
 jsonNumber = map scientificToFloat parseScientific
@@ -87,13 +87,13 @@ jsonNull = (char 'n' >! string "ull" >! return ()) <?> "JSON Null"
 
 mutual
   jsonArray : Parser (List JsonValue)
-  jsonArray = char '[' $!> ((lazy jsonValue) `sepBy` (char ',')) <$ char ']'
+  jsonArray = char '[' $!> (jsonValue `sepBy` (char ',')) <$ char ']'
 
   keyValuePair : Parser (String, JsonValue)
   keyValuePair = do
     key <- space $> jsonString <$ space
     char ':'
-    value <- lazy jsonValue
+    value <- jsonValue
     pure (key, value)
 
   jsonObject : Parser (SortedMap String JsonValue)
@@ -104,8 +104,8 @@ mutual
             <|> (map JsonNumber jsonNumber)
             <|> (map JsonBool   jsonBool)
             <|> (pure JsonNull <$ jsonNull)
-            <|> (map JsonArray  jsonArray)
-            <|> (map JsonObject jsonObject)
+            <|>| map JsonArray  jsonArray
+            <|>| map JsonObject jsonObject
 
   jsonValue : Parser JsonValue
   jsonValue = space $> jsonValue' <$ space
