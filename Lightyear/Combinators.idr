@@ -94,3 +94,12 @@ x <$! y = x <$ commitTo y
 infixl 2 $!>
 ($!>) : Monad m => ParserT m str a -> ParserT m str b -> ParserT m str b
 x $!> y = x $> commitTo y
+
+-- Lazy operators
+infixl 2 <$|
+(<$|) : Monad m => ParserT m str a -> Lazy (ParserT m str b) -> ParserT m str a
+x <$| y = pure const <$> x <$>| y
+
+infixl 2 $>|
+($>|) : Monad m => ParserT m str a -> Lazy (ParserT m str b) -> ParserT m str b
+x $>| y = pure (const id) <$> x <$>| y
