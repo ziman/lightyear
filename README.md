@@ -6,7 +6,7 @@ inspired by [Parsec](http://hackage.haskell.org/package/parsec).
 Module overview:
 * `Lightyear.Core`: central definitions + instances
 * `Lightyear.Errmsg`: error message formatting, mainly internal library
-* `Lightyear.Combinator`: generic combinators like `many` or `sepBy`
+* `Lightyear.Combinators`: generic combinators like `many` or `sepBy`
 * `Lightyear.Strings`: string-bound parsers like `char` or `space`
 
 ## Synopsis
@@ -32,7 +32,7 @@ elem = (try (string "0x") >> hexNumber) <|> string "0123"
 Lightyear:
 ```haskell
 elem : Parser String
-elem = (string "0x" >> commitTo hexNumber) <|> string "0123"
+elem = (string "0x" $> commitTo hexNumber) <|> string "0123"
 -- which may be abbreviated as:
 --   = (string "0x" >! hexNumber) <|> string "0123"
 ```
