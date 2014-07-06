@@ -26,15 +26,15 @@ In other words, the following two pieces of code are equivalent (using illustrat
 Parsec:
 ```haskell
 elem :: Parser String
-elem = (try (string "0x") >> hexNumber) <|> string "0123"
+elem = (try (string "0x") >> hexNumber) <|> decNumber
 ```
 
 Lightyear:
 ```haskell
 elem : Parser String
-elem = (string "0x" $> commitTo hexNumber) <|> string "0123"
+elem = (string "0x" $> commitTo hexNumber) <|> decNumber
 -- which may be abbreviated as:
---   = (string "0x" >! hexNumber) <|> string "0123"
+--   = (string "0x" >! hexNumber) <|> decNumber
 ```
 
 After reading the prefix `0x`, both parsers commit to reading a hexadecimal number
