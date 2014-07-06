@@ -25,13 +25,13 @@ In other words, the following two pieces of code are equivalent (using illustrat
 
 Parsec:
 ```haskell
-elem :: Parser String
+elem :: Parser Int
 elem = (try (string "0x") >> hexNumber) <|> decNumber
 ```
 
 Lightyear:
 ```haskell
-elem : Parser String
+elem : Parser Int
 elem = (string "0x" $> commitTo hexNumber) <|> decNumber
 -- which may be abbreviated as:
 --   = (string "0x" >! hexNumber) <|> decNumber
