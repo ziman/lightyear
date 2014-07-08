@@ -66,6 +66,18 @@ skip = map (const ())
 opt : Monad m => (p : ParserT m str a) -> ParserT m str (Maybe a)
 opt p = map Just p <|> pure Nothing
 
+||| Parse open, then p, then close. Returns the result of `p`.
+|||
+||| @open The opening parser.
+||| @close The closing parser.
+||| @p The parser for the middle part.
+between : Monad m =>
+           (open : ParserT m str a)
+        -> (close : ParserT m str a)
+        -> (p : ParserT m str b)
+        -> ParserT m str b
+between open close p = open $> p <$ close
+
 -- the following names are inspired by the cut operator from Prolog
 
 -- Monad-like operators

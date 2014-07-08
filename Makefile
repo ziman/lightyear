@@ -6,7 +6,7 @@ install: build
 build: Lightyear/*.idr
 	idris --build lightyear.ipkg
 
-test:
+test: install
 	(cd tests; bash runtests.sh)
 
 clean:
