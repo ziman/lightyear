@@ -55,13 +55,75 @@ string s = traverse_ char (unpack s) <?> "string " ++ show s
 space : Monad m => ParserT m String ()
 space = skip (many $ satisfy isSpace) <?> "whitespace"
 
+||| A simple lexer that strips white space from tokens
+lexme : Monad m => ParserT m String a -> ParserT m String a
+lexme p = p <$ space
+
 ||| A parser that matches a specific string, then skips following whitespace
 token : Monad m => String -> ParserT m String ()
-token s = skip (string s) <$ space <?> "token " ++ show s
+token s = lexme (skip (string s)) <?> "token " ++ show s
 
-||| Matches whatever its argument matches, but wrapped in parentheses
+||| Parses ',' and trailing whitespace.
+comma : Monad m => ParserT m String ()
+comma = token "," <?> "Comma"
+
+||| Parses '=' and trailing whitespace.
+equals : Monad m => ParserT m String ()
+equals = token "=" <?> "equals"
+
+||| Parses '.' and trailing whitespace.
+dot : Monad m => ParserT m String ()
+dot = token "." <?> "dot"
+
+||| Parses ':' and trailing whitespace.
+colon : Monad m => ParserT m String ()
+colon = token ":" <?> "colon"
+
+||| Parses ';' and trailing whitespace.
+semi : Monad m => ParserT m String ()
+semi = token ";" <?> "semi colon"
+
+||| Parses `p` enclosed in parenthesis and returns result of `p`.
 parens : Monad m => ParserT m String a -> ParserT m String a
-parens p = char '(' $> p <$ char ')'
+parens p = between (token "(") (token ")") (lexme p)
+
+||| Parses `p` enclosed in brackets and returns result of `p`.
+brackets : Monad m => ParserT m String a -> ParserT m String a
+brackets p = between (token "[") (token "]") (lexme p)
+
+||| Parses `p` enclosed in braces and returns the result of `p`.
+braces : Monad m => ParserT m String a -> ParserT m String a
+braces p = between (token "{") (token "}") (lexme p)
+
+||| Parses `p` enclosed in angles and returns the result of `p`.
+angles : Monad m => ParserT m String a -> ParserT m String a
+angles p = between (token "<") (token ">") (lexme p)
+
+||| Parses `p` enclosed in single quotes and returns the result of `p`.
+||| Not to be used for charLiterals.
+squote : Monad m => ParserT m String a -> ParserT m String a
+squote p = between (char '\'') (char '\'') (lexme p)
+
+||| Parses `p` enclosed in double quotes and returns the result of `p`.
+||| Not to be used for `stringLiterals`.
+dquote : Monad m => ParserT m String a -> ParserT m String a
+dquote p = between (char '\"') (char '\"') (lexme p)
+
+||| Parses /one/ or more occurrences of `p` separated by `comma`.
+commaSep1 : Monad m => ParserT m String a -> ParserT m String (List a)
+commaSep1 p = p `sepBy1` comma
+
+||| Parses /zero/ or more occurrences of `p` separated by `comma`.
+commaSep : Monad m => ParserT m String a -> ParserT m String (List a)
+commaSep p = p `sepBy` comma
+
+||| Parses /one/ or more occurrences of `p` separated by `semi`.
+semiSep1 : Monad m => ParserT m String a -> ParserT m String (List a)
+semiSep1 p = p `sepBy1` semi
+
+||| Parses /zero/ or more occurrences of `p` separated by `semi`.
+semiSep : Monad m => ParserT m String a -> ParserT m String (List a)
+semiSep p = p `sepBy` semi
 
 ||| Matches a single digit
 digit : Monad m => ParserT m String (Fin 10)
@@ -89,6 +151,7 @@ integer = do minus <- opt (char '-')
                Just () => pure (fromInteger ((-1) * theInt))
   where getInteger : List (Fin 10) -> Integer
         getInteger = foldl (\a => \b => 10 * a + cast b) 0
+
 
 testParser : Parser a -> String -> IO (Maybe a)
 testParser p s = case parse p s of
