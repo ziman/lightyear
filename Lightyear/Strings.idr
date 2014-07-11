@@ -56,12 +56,12 @@ space : Monad m => ParserT m String ()
 space = skip (many $ satisfy isSpace) <?> "whitespace"
 
 ||| A simple lexer that strips white space from tokens
-lexme : Monad m => ParserT m String a -> ParserT m String a
-lexme p = p <$ space
+lexeme : Monad m => ParserT m String a -> ParserT m String a
+lexeme p = p <$ space
 
 ||| A parser that matches a specific string, then skips following whitespace
 token : Monad m => String -> ParserT m String ()
-token s = lexme (skip (string s)) <?> "token " ++ show s
+token s = lexeme (skip (string s)) <?> "token " ++ show s
 
 ||| Parses ',' and trailing whitespace.
 comma : Monad m => ParserT m String ()
@@ -85,29 +85,29 @@ semi = token ";" <?> "semi colon"
 
 ||| Parses `p` enclosed in parenthesis and returns result of `p`.
 parens : Monad m => ParserT m String a -> ParserT m String a
-parens p = between (token "(") (token ")") (lexme p)
+parens p = between (token "(") (token ")") p
 
 ||| Parses `p` enclosed in brackets and returns result of `p`.
 brackets : Monad m => ParserT m String a -> ParserT m String a
-brackets p = between (token "[") (token "]") (lexme p)
+brackets p = between (token "[") (token "]") p
 
 ||| Parses `p` enclosed in braces and returns the result of `p`.
 braces : Monad m => ParserT m String a -> ParserT m String a
-braces p = between (token "{") (token "}") (lexme p)
+braces p = between (token "{") (token "}") p
 
 ||| Parses `p` enclosed in angles and returns the result of `p`.
 angles : Monad m => ParserT m String a -> ParserT m String a
-angles p = between (token "<") (token ">") (lexme p)
+angles p = between (token "<") (token ">") p
 
 ||| Parses `p` enclosed in single quotes and returns the result of `p`.
 ||| Not to be used for charLiterals.
 squote : Monad m => ParserT m String a -> ParserT m String a
-squote p = between (char '\'') (char '\'') (lexme p)
+squote p = between (char '\'') (char '\'') p
 
 ||| Parses `p` enclosed in double quotes and returns the result of `p`.
 ||| Not to be used for `stringLiterals`.
 dquote : Monad m => ParserT m String a -> ParserT m String a
-dquote p = between (char '\"') (char '\"') (lexme p)
+dquote p = between (char '\"') (char '\"') p
 
 ||| Parses /one/ or more occurrences of `p` separated by `comma`.
 commaSep1 : Monad m => ParserT m String a -> ParserT m String (List a)
