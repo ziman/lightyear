@@ -129,16 +129,16 @@ semiSep p = p `sepBy` semi
 digit : Monad m => ParserT m String (Fin 10)
 digit = satisfyMaybe fromChar
   where fromChar : Char -> Maybe (Fin 10)
-        fromChar '0' = Just fZ
-        fromChar '1' = Just (fS (fZ))
-        fromChar '2' = Just (fS (fS (fZ)))
-        fromChar '3' = Just (fS (fS (fS (fZ))))
-        fromChar '4' = Just (fS (fS (fS (fS (fZ)))))
-        fromChar '5' = Just (fS (fS (fS (fS (fS (fZ))))))
-        fromChar '6' = Just (fS (fS (fS (fS (fS (fS (fZ)))))))
-        fromChar '7' = Just (fS (fS (fS (fS (fS (fS (fS (fZ))))))))
-        fromChar '8' = Just (fS (fS (fS (fS (fS (fS (fS (fS (fZ)))))))))
-        fromChar '9' = Just (fS (fS (fS (fS (fS (fS (fS (fS (fS (fZ))))))))))
+        fromChar '0' = Just FZ
+        fromChar '1' = Just (FS (FZ))
+        fromChar '2' = Just (FS (FS (FZ)))
+        fromChar '3' = Just (FS (FS (FS (FZ))))
+        fromChar '4' = Just (FS (FS (FS (FS (FZ)))))
+        fromChar '5' = Just (FS (FS (FS (FS (FS (FZ))))))
+        fromChar '6' = Just (FS (FS (FS (FS (FS (FS (FZ)))))))
+        fromChar '7' = Just (FS (FS (FS (FS (FS (FS (FS (FZ))))))))
+        fromChar '8' = Just (FS (FS (FS (FS (FS (FS (FS (FS (FZ)))))))))
+        fromChar '9' = Just (FS (FS (FS (FS (FS (FS (FS (FS (FS (FZ))))))))))
         fromChar _   = Nothing
 
 ||| Matches an integer literal
