@@ -1,2 +1,3 @@
 package lightyear
 modules = Lightyear.Core, Lightyear.Combinators, Lightyear.Errmsg, Lightyear.Strings
+opts = "--no-partial-eval"
