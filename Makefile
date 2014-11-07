@@ -11,3 +11,4 @@ test: install
 
 clean:
 	idris --clean lightyear.ipkg
+	rm tests/*.ibc
