@@ -1,10 +1,12 @@
 module Json
 
-import Lightyear.Core
-import Lightyear.Combinators
-import Lightyear.Strings
+import public Control.Monad.Identity
 
-import Data.SortedMap
+import public Lightyear.Core
+import public Lightyear.Combinators
+import public Lightyear.Strings
+
+import public Data.SortedMap
 
 %access public
 
