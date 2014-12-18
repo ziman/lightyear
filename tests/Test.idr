@@ -1,5 +1,7 @@
 module Main
 
+import Control.Monad.Identity
+
 import Lightyear.Core
 import Lightyear.Combinators
 import Lightyear.Strings
