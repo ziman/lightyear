@@ -1,9 +1,6 @@
 module Main
 
-import Control.Monad.Identity
-
-import Lightyear.Core
-import Lightyear.Combinators
+import Lightyear
 import Lightyear.Strings
 
 test : Show a => Parser a -> String -> IO ()
