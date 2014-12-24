@@ -1,10 +1,15 @@
-module Errmsg
-
+-- -------------------------------------------------------------- [ Errmsg.idr ]
+-- Module      : Lightyear.Errmsg
+-- Description : Error message formatting.
+--
 -- This code is distributed under the BSD 2-clause license.
 -- See the file LICENSE in the root directory for its full text.
+-- --------------------------------------------------------------------- [ EOH ]
+module Errmsg
 
 import Lightyear.Core
 
+-- ------------------------------------------------------------------- [ Begin ]
 public
 class Layout str where
   lineLengths : str -> List Int
@@ -19,7 +24,9 @@ rowcol (w :: ws) (x :: []) = (1 + (nat2int $ length ws), 1 + w-x)
 rowcol (w :: ws) (x :: xs) = rowcol ws xs
 rowcol       []        xs  = (0,0)  -- should not happen
 
-formatItem : Layout str => str -> (str, String) -> String
+formatItem : Layout str => str
+                        -> (str, String)
+                        -> String
 formatItem whole (rest, msg)
   = let (row, col) = rowcol (reverse $ lineLengths whole) (reverse $ lineLengths rest)
     in "at " ++ show row ++ ":" ++ show col ++ " expected:\n  " ++ msg
@@ -30,5 +37,8 @@ unlines [s] = s
 unlines (s :: ss) = s ++ "\n" ++ unlines ss
 
 public
-formatError : Layout str => str -> List (str, String) -> String
+formatError : Layout str => str
+                         -> List (str, String)
+                         -> String
 formatError whole = unlines . map (formatItem whole)
+-- --------------------------------------------------------------------- [ EOF ]
