@@ -1,7 +1,11 @@
-module Lightyear.Core
-
+-- ---------------------------------------------------------------- [ Core.idr ]
+-- Module      : Lightyear.Core
+-- Description : Centrail Definitions and Instances
+--
 -- This code is distributed under the BSD 2-clause license.
 -- See the file LICENSE in the root directory for its full text.
+-- --------------------------------------------------------------------- [ EOH ]
+module Lightyear.Core
 
 %access public
 %default total
@@ -26,7 +30,9 @@ record ParserT : (m : Type -> Type) -> (str : Type) -> (a : Type) -> Type where
                      str -> m r) -> ParserT m str a
 
 ||| Run a parser monad on some input
-execParserT : Monad m => ParserT m str a -> (input : str) -> m (Result str a)
+execParserT : Monad m => ParserT m str a
+                      -> (input : str)
+                      -> m (Result str a)
 execParserT {m} {str} {a} (PT p) input = p (Result str a) success success failure failure input
   where success x i = pure $ Success i x
         failure = pure . Failure
@@ -44,10 +50,12 @@ instance Monad m => Applicative (ParserT m str) where
 
 
 infixl 2 <$>|
-||| A variant of <$>, lazy in its second argument,
-||| which must NOT be pattern-matched right away
-||| because we want to keep it lazy in case it's not used.
-(<$>|) : Monad m => ParserT m str (a -> b) -> Lazy (ParserT m str a) -> ParserT m str b
+||| A variant of <$>, lazy in its second argument, which must NOT be
+||| pattern-matched right away because we want to keep it lazy in case
+||| it's not used.
+(<$>|) : Monad m => ParserT m str (a -> b)
+                 -> Lazy (ParserT m str a)
+                 -> ParserT m str b
 (<$>|) (PT f) x = PT $ \r, us, cs, ue, ce =>
     f r (\f' => let PT g = x in g r (us . f') (cs . f') ue ce)
         (\f' => let PT g = x in g r (cs . f') (cs . f') ce ce)
@@ -72,10 +80,12 @@ instance Monad m => Alternative (ParserT m str) where
 
 infixl 3 <|>|
 
-||| A variant of <|>, lazy in its second argument,
-||| which must NOT be pattern-matched right away
-||| because we want to keep it lazy in case it's not used.
-(<|>|) : Monad m => ParserT m str a -> Lazy (ParserT m str a) -> ParserT m str a
+||| A variant of <|>, lazy in its second argument, which must NOT be
+||| pattern-matched right away because we want to keep it lazy in case
+||| it's not used.
+(<|>|) : Monad m => ParserT m str a
+                 -> Lazy (ParserT m str a)
+                 -> ParserT m str a
 (<|>|) (PT x) y = PT $ \r, us, cs, ue, ce, i =>
   x r us cs (\err => let PT y' = y in y' r us cs (ue . (err ++))
                                                  (ce . (err ++)) i) ce i
@@ -93,14 +103,20 @@ commitTo (PT f) = PT $ \r, us, cs, ue, ce => f r cs cs ce ce
 record Stream : Type -> Type -> Type where
   St : (uncons : str -> Maybe (tok, str)) -> Stream tok str
 
-||| Matches a single element that satsifies some condition, accepting a transformation of successes
-satisfyMaybe' : Monad m => Stream tok str -> (tok -> Maybe out) -> ParserT m str out
+||| Matches a single element that satsifies some condition, accepting
+||| a transformation of successes.
+satisfyMaybe' : Monad m => Stream tok str
+                        -> (tok -> Maybe out)
+                        -> ParserT m str out
 satisfyMaybe' (St uncons) f = PT $ \r, us, cs, ue, ce, i => case uncons i of
     Nothing      => ue [(i, "a token, not EOF")]
     Just (t, i') => case f t of
       Nothing  => ue [(i, "a different token")]
       Just res => us res i'
 
-||| Matches a single element that satsifies some condition
-satisfy' : Monad m => Stream tok str -> (tok -> Bool) -> ParserT m str tok
+||| Matches a single element that satsifies some condition.
+satisfy' : Monad m => Stream tok str
+                   -> (tok -> Bool)
+                   -> ParserT m str tok
 satisfy' st p = satisfyMaybe' st (\t => if p t then Just t else Nothing)
+-- --------------------------------------------------------------------- [ EOF ]

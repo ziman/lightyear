@@ -3,5 +3,5 @@ package lightyear
 modules = Lightyear.Core
 	, Lightyear.Combinators
 	, Lightyear.Errmsg
+    , Lightyear
 	, Lightyear.Strings
-
