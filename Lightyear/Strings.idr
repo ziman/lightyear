@@ -7,6 +7,9 @@
 -- --------------------------------------------------------------------- [ EOH ]
 module Lightyear.Strings
 
+import public Data.Vect
+import public Data.Fin
+
 import public Control.Monad.Identity
 
 import Lightyear.Core
