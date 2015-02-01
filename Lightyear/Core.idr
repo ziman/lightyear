@@ -7,6 +7,8 @@
 -- --------------------------------------------------------------------- [ EOH ]
 module Lightyear.Core
 
+import Data.Fin
+
 %access public
 %default total
 

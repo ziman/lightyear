@@ -7,6 +7,8 @@
 -- --------------------------------------------------------------------- [ EOH ]
 module Lightyear.Combinators
 
+import Data.Vect
+
 import Lightyear.Core
 
 %access public

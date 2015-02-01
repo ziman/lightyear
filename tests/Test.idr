@@ -1,5 +1,8 @@
 module Main
 
+import Data.Vect
+import Data.Fin
+
 import Lightyear
 import Lightyear.Strings
 
