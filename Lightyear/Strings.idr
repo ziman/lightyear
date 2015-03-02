@@ -71,7 +71,7 @@ space = skip (many $ satisfy isSpace) <?> "whitespace"
 
 ||| A simple lexer that strips white space from tokens
 lexeme : Monad m => ParserT m String a -> ParserT m String a
-lexeme p = p <$ space
+lexeme p = p <* space
 
 -- ------------------------------------------------------------------ [ Tokens ]
 
@@ -177,6 +177,6 @@ integer = do minus <- opt (char '-')
 
 testParser : Parser a -> String -> IO (Maybe a)
 testParser p s = case parse p s of
-  Left  e => putStrLn e $> pure Nothing
+  Left  e => putStrLn e *> pure Nothing
   Right x => pure (Just x)
 -- --------------------------------------------------------------------- [ EOF ]

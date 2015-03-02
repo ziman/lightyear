@@ -45,20 +45,20 @@ instance Monad m => Functor (ParserT m str) where
 instance Monad m => Applicative (ParserT m str) where
   pure x = PT (\r, us, cs, ue, ce => us x)
 
-  (<$>) (PT f) (PT g) = PT $ \r, us, cs, ue, ce =>
+  (<*>) (PT f) (PT g) = PT $ \r, us, cs, ue, ce =>
     f r (\f' => g r (us . f') (cs . f') ue ce)
         (\f' => g r (cs . f') (cs . f') ce ce)
         ue ce
 
 
-infixl 2 <$>|
+infixl 2 <*>|
 ||| A variant of <$>, lazy in its second argument, which must NOT be
 ||| pattern-matched right away because we want to keep it lazy in case
 ||| it's not used.
-(<$>|) : Monad m => ParserT m str (a -> b)
+(<*>|) : Monad m => ParserT m str (a -> b)
                  -> Lazy (ParserT m str a)
                  -> ParserT m str b
-(<$>|) (PT f) x = PT $ \r, us, cs, ue, ce =>
+(<*>|) (PT f) x = PT $ \r, us, cs, ue, ce =>
     f r (\f' => let PT g = x in g r (us . f') (cs . f') ue ce)
         (\f' => let PT g = x in g r (cs . f') (cs . f') ce ce)
         ue ce
