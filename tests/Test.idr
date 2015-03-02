@@ -12,7 +12,7 @@ test p input = case parse p input of
   Right x => print x
 
 listOf : Parser a -> Parser (List a)
-listOf p = string "[" $!> (p `sepBy` string ",") <$ string "]"
+listOf p = string "[" *!> (p `sepBy` string ",") <* string "]"
 
 listOf' : Parser a -> Parser (List a)
 listOf' p = brackets (commaSep p)
@@ -25,9 +25,9 @@ main = do
   test nat "123"
   test (listOf nat) "[1,2,3,99]"
   test (listOf nat) "foo"
-  test (listOf nat <|> (string "[foo" $> pure List.Nil)) "[foo"  -- should commit and fail
+  test (listOf nat <|> (string "[foo" *> pure List.Nil)) "[foo"  -- should commit and fail
   test (listOf $ listOf nat) "[[1,2],[],[3,4,5]]"
 
   test (listOf' nat) "[1,2,3,99]"
   test (listOf' $ listOf' nat) "[[1,2],[],[3,4,5]]"
-  test (listOf' nat <|> (string "[foo" $> pure List.Nil)) "[foo"  -- should commit and fail
+  test (listOf' nat <|> (string "[foo" *> pure List.Nil)) "[foo"  -- should commit and fail

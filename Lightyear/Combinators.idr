@@ -29,7 +29,7 @@ private
 ||| Run some parser as many times as possible, collecting a list of
 ||| successes.
 many : Monad m => ParserT m str a -> ParserT m str (List a)
-many p = (pure (:::) <$> p <$>| many p) <|> pure List.Nil
+many p = (pure (:::) <*> p <*>| many p) <|> pure List.Nil
 
 ||| Run the specified parser precisely `n` times, returning a vector
 ||| of successes.
@@ -53,7 +53,7 @@ some p = [| p ::: many p |]
 sepBy1 : Monad m => (p : ParserT m str a)
                  -> (s : ParserT m str b)
                  -> ParserT m str (List a)
-sepBy1 p s = [| p ::: many (s $> p) |]
+sepBy1 p s = [| p ::: many (s *> p) |]
 
 ||| Parse zero or more `p`s, separated by `s`s, returning a list of
 ||| successes.
@@ -76,14 +76,14 @@ sepByN : Monad m => (n : Nat)
                  -> (s : ParserT m str b)
                  -> ParserT m str (Vect n a)
 sepByN    Z  p s = pure Vect.Nil
-sepByN (S n) p s = [| p ::. ntimes n (s $> p) |]
+sepByN (S n) p s = [| p ::. ntimes n (s *> p) |]
 
 ||| Alternate between matches of `p` and `s`, starting with `p`,
 ||| returning a list of successes from both.
 alternating : Monad m => (p : ParserT m str a)
                       -> (s : ParserT m str a)
                       -> ParserT m str (List a)
-alternating p s = (pure (:::) <$> p <$>| alternating s p) <|> pure List.Nil
+alternating p s = (pure (:::) <*> p <*>| alternating s p) <|> pure List.Nil
 
 ||| Throw away the result from a parser
 skip : Monad m => ParserT m str a -> ParserT m str ()
@@ -103,7 +103,7 @@ between : Monad m => (open : ParserT m str a)
                   -> (close : ParserT m str a)
                   -> (p : ParserT m str b)
                   -> ParserT m str b
-between open close p = open $> p <$ close
+between open close p = open *> p <* close
 
 -- The following names are inspired by the cut operator from Prolog
 
@@ -125,36 +125,36 @@ x >! y = x >>= \_ => commitTo y
 
 -- ---------------------------------------------- [ Applicative-like Operators ]
 
-infixl 2 <$!>
+infixl 2 <*!>
 ||| Committing application
-(<$!>) : Monad m => ParserT m str (a -> b)
+(<*!>) : Monad m => ParserT m str (a -> b)
                  -> ParserT m str a
                  -> ParserT m str b
-f <$!> x = f <$> commitTo x
+f <*!> x = f <*> commitTo x
 
-infixl 2 <$!
-(<$!) : Monad m => ParserT m str a
+infixl 2 <*!
+(<*!) : Monad m => ParserT m str a
                 -> ParserT m str b
                 -> ParserT m str a
-x <$! y = x <$ commitTo y
+x <*! y = x <* commitTo y
 
-infixl 2 $!>
-($!>) : Monad m => ParserT m str a
+infixl 2 *!>
+(*!>) : Monad m => ParserT m str a
                 -> ParserT m str b
                 -> ParserT m str b
-x $!> y = x $> commitTo y
+x *!> y = x *> commitTo y
 
 -- ---------------------------------------------------------- [ Lazy Operators ]
 
-infixl 2 <$|
-(<$|) : Monad m => ParserT m str a
+infixl 2 <*|
+(<*|) : Monad m => ParserT m str a
                 -> Lazy (ParserT m str b)
                 -> ParserT m str a
-x <$| y = pure const <$> x <$>| y
+x <*| y = pure const <*> x <*>| y
 
-infixl 2 $>|
-($>|) : Monad m => ParserT m str a
+infixl 2 *>|
+(*>|) : Monad m => ParserT m str a
                 -> Lazy (ParserT m str b)
                 -> ParserT m str b
-x $>| y = pure (const id) <$> x <$>| y
+x *>| y = pure (const id) <*> x <*>| y
 -- ---------------------------------------------------------------------- [ EF ]
