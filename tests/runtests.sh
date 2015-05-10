@@ -23,12 +23,19 @@ idris JsonTest.idr -p lightyear -p contrib -o json || die "* could not compile t
 echo "compiled OK, running the JSON test..."
 timeout 5s ./json >> output || die "* test failed or timed out *"
 
-if diff output expected; then
-	echo "### everything PASS ###"
+if [ "$1" = "believe_me" ]; then
+	echo '### marking current output as expected ###'
+	cat output > expected
 	clean_up
 	exit 0
 else
-	echo "### something FAIL ###"
-	clean_up
-	exit 1
+	if diff output expected; then
+		echo "### everything PASS ###"
+		clean_up
+		exit 0
+	else
+		echo "### something FAIL ###"
+		clean_up
+		exit 1
+	fi
 fi

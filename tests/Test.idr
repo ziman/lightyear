@@ -9,7 +9,7 @@ import Lightyear.Strings
 test : Show a => Parser a -> String -> IO ()
 test p input = case parse p input of
   Left  e => putStrLn e
-  Right x => print x
+  Right x => printLn x
 
 listOf : Parser a -> Parser (List a)
 listOf p = string "[" *!> (p `sepBy` string ",") <* string "]"

@@ -1,4 +1,6 @@
-123[1, 2, 3, 99]at 1:1 expected:
+123
+[1, 2, 3, 99]
+at 1:1 expected:
   string "["
 at 1:1 expected:
   character '['
@@ -10,7 +12,11 @@ at 1:2 expected:
   character ']'
 at 1:2 expected:
   a different token
-[[1, 2], [], [3, 4, 5]][1, 2, 3, 99][[1, 2], [], [3, 4, 5]][][1, 2, 4, [5, 6], null, {"some": ["object"]}, false]
+[[1, 2], [], [3, 4, 5]]
+[1, 2, 3, 99]
+[[1, 2], [], [3, 4, 5]]
+[]
+[1, 2, 4, [5, 6], null, {"some": ["object"]}, false]
 {"hallo": 42, "nichts": null}
 error: at 1:1 expected:
   character '['
