@@ -70,9 +70,10 @@ jsonString : Parser String
 jsonString = char '"' *> map pack jsonString' <?> "JSON string"
 
 -- inspired by Haskell's Data.Scientific module
-record Scientific : Type where
-  MkScientific : (coefficient : Integer) ->
-                 (exponent : Integer) -> Scientific
+record Scientific where
+  constructor MkScientific
+  coefficient : Integer
+  exponent : Integer
 
 scientificToFloat : Scientific -> Float
 scientificToFloat (MkScientific c e) = fromInteger c * exp

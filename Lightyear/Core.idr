@@ -1,6 +1,6 @@
 -- ---------------------------------------------------------------- [ Core.idr ]
 -- Module      : Lightyear.Core
--- Description : Centrail Definitions and Instances
+-- Description : Central Definitions and Instances
 --
 -- This code is distributed under the BSD 2-clause license.
 -- See the file LICENSE in the root directory for its full text.
@@ -23,13 +23,16 @@ instance Functor (Result str) where
   map f (Success s x ) = Success s (f x)
   map f (Failure es) = Failure es
 
-record ParserT : (m : Type -> Type) -> (str : Type) -> (a : Type) -> Type where
-  PT : (runParserT : (r : Type) ->
-                     (a -> str -> m r) -> -- uncommitted success
-                     (a -> str -> m r) -> -- committed success
-                     (List (str, String) -> m r) -> -- uncommitted error
-                     (List (str, String) -> m r) -> -- committed error
-                     str -> m r) -> ParserT m str a
+record ParserT (m : Type -> Type) str a where
+  constructor PT
+  runParserT :
+    (r : Type) ->
+    (a -> str -> m r) -> -- uncommitted success
+    (a -> str -> m r) -> -- committed success
+    (List (str, String) -> m r) -> -- uncommitted error
+    (List (str, String) -> m r) -> -- committed error
+    str ->
+    m r
 
 ||| Run a parser monad on some input
 execParserT : Monad m => ParserT m str a
@@ -102,8 +105,9 @@ infixl 0 <?>
 commitTo : Monad m => ParserT m str a -> ParserT m str a
 commitTo (PT f) = PT $ \r, us, cs, ue, ce => f r cs cs ce ce
 
-record Stream : Type -> Type -> Type where
-  St : (uncons : str -> Maybe (tok, str)) -> Stream tok str
+record Stream tok str where
+  constructor St
+  uncons : str -> Maybe (tok, str)
 
 ||| Matches a single element that satsifies some condition, accepting
 ||| a transformation of successes.
