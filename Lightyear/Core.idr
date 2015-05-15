@@ -105,24 +105,25 @@ infixl 0 <?>
 commitTo : Monad m => ParserT m str a -> ParserT m str a
 commitTo (PT f) = PT $ \r, us, cs, ue, ce => f r cs cs ce ce
 
-record Stream tok str where
-  constructor St
+class Stream tok str where
   uncons : str -> Maybe (tok, str)
 
 ||| Matches a single element that satsifies some condition, accepting
 ||| a transformation of successes.
-satisfyMaybe' : Monad m => Stream tok str
-                        -> (tok -> Maybe out)
+satisfyMaybe' : (Monad m, Stream tok str)
+                        => (tok -> Maybe out)
                         -> ParserT m str out
-satisfyMaybe' (St uncons) f = PT $ \r, us, cs, ue, ce, i => case uncons i of
-    Nothing      => ue [(i, "a token, not EOF")]
-    Just (t, i') => case f t of
-      Nothing  => ue [(i, "a different token")]
-      Just res => us res i'
+satisfyMaybe' {tok=tok} {str=str} f =
+  PT $ \r, us, cs, ue, ce, i =>
+    case uncons {tok=tok} {str=str} i of
+      Nothing      => ue [(i, "a token, not EOF")]
+      Just (t, i') => case f t of
+        Nothing  => ue [(i, "a different token")]
+        Just res => us res i'
 
 ||| Matches a single element that satsifies some condition.
-satisfy' : Monad m => Stream tok str
-                   -> (tok -> Bool)
+satisfy' : (Monad m, Stream tok str)
+                   => (tok -> Bool)
                    -> ParserT m str tok
-satisfy' st p = satisfyMaybe' st (\t => if p t then Just t else Nothing)
+satisfy' p = satisfyMaybe' (\t => if p t then Just t else Nothing)
 -- --------------------------------------------------------------------- [ EOF ]

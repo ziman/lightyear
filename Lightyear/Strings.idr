@@ -39,19 +39,18 @@ parse f s = let Id r = execParserT f s in case r of
   Failure es  => Left $ formatError s es
 
 -- ------------------------------------------------------------ [ Core Parsers ]
-private
-uncons : String -> Maybe (Char, String)
-uncons s with (strM s)
-  uncons ""             | StrNil       = Nothing
-  uncons (strCons x xs) | StrCons x xs = Just (x, xs)
+instance Stream Char String where
+  uncons s with (strM s)
+    uncons ""             | StrNil       = Nothing
+    uncons (strCons x xs) | StrCons x xs = Just (x, xs)
 
 ||| Matches a single character that satisfies some condition
 satisfy : Monad m => (Char -> Bool) -> ParserT m String Char
-satisfy = satisfy' (St uncons)
+satisfy = satisfy'
 
 ||| Matches a single character that satsifies some condition, accepting a transformation of successes
 satisfyMaybe : Monad m => (Char -> Maybe out) -> ParserT m String out
-satisfyMaybe = satisfyMaybe' (St uncons)
+satisfyMaybe = satisfyMaybe'
 
 -- ---------------------------------------------------------- [ Reserved Stuff ]
 
