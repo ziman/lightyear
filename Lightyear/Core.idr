@@ -105,15 +105,22 @@ infixl 0 <?>
 commitTo : Monad m => ParserT m str a -> ParserT m str a
 commitTo (PT f) = PT $ \r, us, cs, ue, ce => f r cs cs ce ce
 
-class Stream tok str where
+-- There is no reason that we mark "str" as the determining type
+-- other than to aid typeclass resolution.
+--
+-- I feel that having this restriction (which is probably okay
+-- given that the only streams so far are String and Text anyway)
+-- is more acceptable than failing surprisingly
+-- any time the unsuspecting user calls "satisfy" without {tok=Char}.
+class Stream tok str | str where
   uncons : str -> Maybe (tok, str)
 
-||| Matches a single element that satsifies some condition, accepting
+||| Matches a single element that satisfies some condition, accepting
 ||| a transformation of successes.
-satisfyMaybe' : (Monad m, Stream tok str)
+satisfyMaybe : (Monad m, Stream tok str)
                         => (tok -> Maybe out)
                         -> ParserT m str out
-satisfyMaybe' {tok=tok} {str=str} f =
+satisfyMaybe {tok=tok} {str=str} f =
   PT $ \r, us, cs, ue, ce, i =>
     case uncons {tok=tok} {str=str} i of
       Nothing      => ue [(i, "a token, not EOF")]
@@ -121,9 +128,9 @@ satisfyMaybe' {tok=tok} {str=str} f =
         Nothing  => ue [(i, "a different token")]
         Just res => us res i'
 
-||| Matches a single element that satsifies some condition.
-satisfy' : (Monad m, Stream tok str)
+||| Matches a single element that satisfies some condition.
+satisfy : (Monad m, Stream tok str)
                    => (tok -> Bool)
                    -> ParserT m str tok
-satisfy' p = satisfyMaybe' (\t => if p t then Just t else Nothing)
+satisfy p = satisfyMaybe (\t => if p t then Just t else Nothing)
 -- --------------------------------------------------------------------- [ EOF ]
