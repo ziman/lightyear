@@ -58,7 +58,7 @@ specialChar = do
     'r'  => pure '\r'
     't'  => pure '\t'
     'u'  => map chr hexQuad
-    _    => satisfy (const False) <?> "expected special char"
+    _    => fail "expected special char"
 
 jsonString' : Parser (List Char)
 jsonString' = (char '"' *!> pure Prelude.List.Nil) <|> do
