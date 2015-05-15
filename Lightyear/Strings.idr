@@ -56,12 +56,12 @@ satisfyMaybe = satisfyMaybe' (St uncons)
 -- ---------------------------------------------------------- [ Reserved Stuff ]
 
 ||| A parser that matches some particular character
-char : Monad m => Char -> ParserT m String ()
-char c = skip (satisfy (== c)) <?> "character '" ++ singleton c ++ "'"
+char : Monad m => Char -> ParserT m String Char
+char c = satisfy (== c) <?> "character '" ++ singleton c ++ "'"
 
 ||| A parser that matches a particular string
-string : Monad m => String -> ParserT m String ()
-string s = traverse_ char (unpack s) <?> "string " ++ show s
+string : Monad m => String -> ParserT m String String
+string s = pack <$> (traverse char $ unpack s) <?> "string " ++ show s
 
 -- ------------------------------------------------------------------- [ Space ]
 
@@ -169,7 +169,7 @@ integer = do minus <- opt (char '-')
              let theInt = getInteger ds
              case minus of
                Nothing => pure (fromInteger theInt)
-               Just () => pure (fromInteger ((-1) * theInt))
+               Just _  => pure (fromInteger ((-1) * theInt))
   where getInteger : List (Fin 10) -> Integer
         getInteger = foldl (\a => \b => 10 * a + cast b) 0
 
