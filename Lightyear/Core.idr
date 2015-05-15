@@ -111,7 +111,11 @@ commitTo (PT f) = PT $ \r, us, cs, ue, ce => f r cs cs ce ce
 -- I feel that having this restriction (which is probably okay
 -- given that the only streams so far are String and Text anyway)
 -- is more acceptable than failing surprisingly
--- any time the unsuspecting user calls "satisfy" without {tok=Char}.
+-- any time the unsuspecting user calls "satisfy" without {tok=Char}
+-- in an odd context.
+--
+-- We make "str" the determining type because it's usually fixed
+-- by the parser monad you're working in, which helps resolution.
 class Stream tok str | str where
   uncons : str -> Maybe (tok, str)
 
