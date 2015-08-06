@@ -12,13 +12,13 @@ clean_up() {
 clean_up
 
 echo "compiling lightyear tests..."
-idris Test.idr -p lightyear -o test || die "* could not compile tests *"
+idris Test.idr --typeintype -p lightyear -o test || die "* could not compile tests *"
 
 echo "compiled OK, running lightyear tests..."
 timeout 5s ./test > output || die "* test failed or timed out *"
 
 echo "compiling the JSON test..."
-idris JsonTest.idr -p lightyear -p contrib -o json || die "* could not compile the json test *"
+idris JsonTest.idr --typeintype -p lightyear -p contrib -o json || die "* could not compile the json test *"
 
 echo "compiled OK, running the JSON test..."
 timeout 5s ./json >> output || die "* test failed or timed out *"
