@@ -31,9 +31,15 @@ formatItem whole (rest, msg)
   = let (row, col) = rowcol (reverse $ lineLengths whole) (reverse $ lineLengths rest)
     in "at " ++ show row ++ ":" ++ show col ++ " expected:\n  " ++ msg
 
+namespace Err
+  unlines : List String -> String
+  unlines []  = ""
+  unlines [s] = s
+  unlines (s :: ss) = s ++ "\n" ++ Err.unlines ss
+
 public
 formatError : Layout str => str
                          -> List (str, String)
                          -> String
-formatError whole = unlines . map (formatItem whole)
+formatError whole = Err.unlines . map (formatItem whole)
 -- --------------------------------------------------------------------- [ EOF ]
