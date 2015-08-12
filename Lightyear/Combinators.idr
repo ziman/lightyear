@@ -31,6 +31,22 @@ private
 many : Monad m => ParserT m str a -> ParserT m str (List a)
 many p = (pure (:::) <*> p <*>| many p) <|> pure List.Nil
 
+||| Run some parser `p` until the second parser is encountered,
+||| collecting a list of success for `p`, and the result of the second
+||| parser is dropped.
+|||
+||| Primarily useful for collecting single line comments and other
+||| similar verbatim environments.
+manyTill : Monad m => ParserT m String a
+                   -> ParserT m String b
+                   -> ParserT m String (List a)
+manyTill p end = scan
+  where
+    scan : Monad m => ParserT m String (List a)
+    scan = do { end; return List.Nil } <|>
+           do { x <- p; xs <- scan; return (x::xs)}
+
+
 ||| Run the specified parser precisely `n` times, returning a vector
 ||| of successes.
 ntimes : Monad m => (n : Nat)

@@ -65,6 +65,14 @@ lexeme p = p <* space
 
 -- ------------------------------------------------------------------ [ Tokens ]
 
+||| Accept any character.
+anyChar : Monad m => ParserT m String Char
+anyChar = satisfy (const True)
+
+||| Accept EOL character
+eol : Monad m => ParserT m String ()
+eol = char '\n' *> return () <?> "eol"
+
 ||| A parser that matches a specific string, then skips following whitespace
 token : Monad m => String -> ParserT m String ()
 token s = lexeme (skip (string s)) <?> "token " ++ show s
@@ -116,6 +124,14 @@ squote p = between (char '\'') (char '\'') p
 ||| Not to be used for `stringLiterals`.
 dquote : Monad m => ParserT m String a -> ParserT m String a
 dquote p = between (char '\"') (char '\"') p
+
+||| Collect the literal string contained between two characters
+literal' : Monad m => Char -> Char -> ParserT m String String
+literal' l r = map pack $ between (char l) (char r) (some (satisfy (/= r)))
+
+||| Literal string between two identical characters
+literal : Monad m => Char -> ParserT m String String
+literal c = literal' c c
 
 -- --------------------------------------------------- [ Separated Expressions ]
 ||| Parses /one/ or more occurrences of `p` separated by `comma`.
