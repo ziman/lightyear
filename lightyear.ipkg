@@ -5,3 +5,4 @@ modules = Lightyear.Core
 	, Lightyear.Errmsg
         , Lightyear
 	, Lightyear.Strings
+	, Lightyear.Char
