@@ -25,7 +25,7 @@ parseFile p fn =
         src <- doRead ""
         close
         pure $ parse p src
-      False => pure $ Left "File Not Found"
+      False => pure $ Left "Could Not Open File"
   where
     doRead : String -> Eff String [FILE_IO (OpenFile Read)]
     doRead b = if (not !eof)
