@@ -1,6 +1,7 @@
 module Json
 
 import public Lightyear
+import public Lightyear.Char
 import public Lightyear.Strings
 
 import public Data.SortedMap
@@ -108,7 +109,7 @@ mutual
 
   keyValuePair : Parser (String, JsonValue)
   keyValuePair = do
-    key <- space *> jsonString <* space
+    key <- spaces *> jsonString <* spaces
     char ':'
     value <- jsonValue
     pure (key, value)
@@ -125,7 +126,7 @@ mutual
             <|>| map JsonObject jsonObject
 
   jsonValue : Parser JsonValue
-  jsonValue = space *> jsonValue' <* space
+  jsonValue = spaces *> jsonValue' <* spaces
 
 jsonToplevelValue : Parser JsonValue
 jsonToplevelValue = (map JsonArray jsonArray) <|> (map JsonObject jsonObject)

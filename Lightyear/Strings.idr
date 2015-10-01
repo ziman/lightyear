@@ -16,6 +16,8 @@ import Lightyear.Core
 import Lightyear.Combinators
 import Lightyear.Errmsg
 
+import Lightyear.Char
+
 %access public
 
 -- -------------------------------------------------------- [ Helper Functions ]
@@ -45,23 +47,15 @@ instance Stream Char String where
 
 -- ---------------------------------------------------------- [ Reserved Stuff ]
 
-||| A parser that matches some particular character
-char : Monad m => Char -> ParserT m String Char
-char c = satisfy (== c) <?> "character '" ++ singleton c ++ "'"
-
 ||| A parser that matches a particular string
 string : Monad m => String -> ParserT m String String
 string s = pack <$> (traverse char $ unpack s) <?> "string " ++ show s
 
 -- ------------------------------------------------------------------- [ Space ]
 
-||| A parser that skips whitespace
-space : Monad m => ParserT m String ()
-space = skip (many $ satisfy isSpace) <?> "whitespace"
-
 ||| A simple lexer that strips white space from tokens
 lexeme : Monad m => ParserT m String a -> ParserT m String a
-lexeme p = p <* space
+lexeme p = p <* spaces
 
 -- ------------------------------------------------------------------ [ Tokens ]
 
@@ -141,35 +135,6 @@ semiSep1 p = p `sepBy1` semi
 ||| Parses /zero/ or more occurrences of `p` separated by `semi`.
 semiSep : Monad m => ParserT m String a -> ParserT m String (List a)
 semiSep p = p `sepBy` semi
-
--- ----------------------------------------------------------------- [ Numbers ]
-
-||| Matches a single digit
-digit : Monad m => ParserT m String (Fin 10)
-digit = satisfyMaybe fromChar
-  where fromChar : Char -> Maybe (Fin 10)
-        fromChar '0' = Just FZ
-        fromChar '1' = Just (FS (FZ))
-        fromChar '2' = Just (FS (FS (FZ)))
-        fromChar '3' = Just (FS (FS (FS (FZ))))
-        fromChar '4' = Just (FS (FS (FS (FS (FZ)))))
-        fromChar '5' = Just (FS (FS (FS (FS (FS (FZ))))))
-        fromChar '6' = Just (FS (FS (FS (FS (FS (FS (FZ)))))))
-        fromChar '7' = Just (FS (FS (FS (FS (FS (FS (FS (FZ))))))))
-        fromChar '8' = Just (FS (FS (FS (FS (FS (FS (FS (FS (FZ)))))))))
-        fromChar '9' = Just (FS (FS (FS (FS (FS (FS (FS (FS (FS (FZ))))))))))
-        fromChar _   = Nothing
-
-||| Matches an integer literal
-integer : (Num n, Monad m) => ParserT m String n
-integer = do minus <- opt (char '-')
-             ds <- some digit
-             let theInt = getInteger ds
-             case minus of
-               Nothing => pure (fromInteger theInt)
-               Just _  => pure (fromInteger ((-1) * theInt))
-  where getInteger : List (Fin 10) -> Integer
-        getInteger = foldl (\a => \b => 10 * a + cast b) 0
 
 -- -------------------------------------------------------- [ Testing Function ]
 

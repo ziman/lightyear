@@ -7,7 +7,8 @@ Module overview:
 * `Lightyear.Core`: central definitions + instances
 * `Lightyear.Errmsg`: error message formatting, mainly internal library
 * `Lightyear.Combinators`: generic combinators like `many` or `sepBy`
-* `Lightyear.Strings`: string-bound parsers like `char` or `space`
+* `Lightyear.Char`: char-bound parsers like `char` or `space`
+* `Lightyear.Strings`: string-bound parsers like `strings` or `lexeme`
 
 ## Synopsis
 

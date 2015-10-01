@@ -2,9 +2,10 @@ package lightyear
 
 opts = "-p effects"
 
-modules = Lightyear.Core
+modules = Lightyear
+	, Lightyear.Core
         , Lightyear.Combinators
         , Lightyear.Errmsg
-        , Lightyear
-        , Lightyear.Strings
         , Lightyear.StringFile
+	, Lightyear.Strings
+	, Lightyear.Char
