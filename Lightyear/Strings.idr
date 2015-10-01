@@ -117,6 +117,14 @@ squote p = between (char '\'') (char '\'') p
 dquote : Monad m => ParserT m String a -> ParserT m String a
 dquote p = between (char '\"') (char '\"') p
 
+||| Collect the literal string contained between two characters
+quoted' : Monad m => Char -> Char -> ParserT m String String
+quoted' l r = map pack $ between (char l) (char r) (some (satisfy (/= r)))
+
+||| Literal string between two identical characters
+quoted : Monad m => Char -> ParserT m String String
+quoted c = quoted' c c
+
 -- --------------------------------------------------- [ Separated Expressions ]
 ||| Parses /one/ or more occurrences of `p` separated by `comma`.
 commaSep1 : Monad m => ParserT m String a -> ParserT m String (List a)
