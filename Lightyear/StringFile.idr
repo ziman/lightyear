@@ -16,21 +16,34 @@ import Lightyear.Strings
 
 -- ---------------------------------------------------- [ A String File Parser ]
 
-parseFile : Parser a
+namespace Lightyear
+  private
+  readFile : (String -> e) -> String -> Eff (Either e String) [FILE_IO ()]
+  readFile errFunc fname = do
+      case !(open fname Read) of
+        False => pure $ Left (errFunc fname)
+        True => do
+          src <- readAcc ""
+          close
+          pure $ Right src
+    where
+      readAcc : String -> Eff String [FILE_IO (OpenFile Read)]
+      readAcc acc = if (not !(eof))
+                       then readAcc (acc ++ !(readLine))
+                       else pure acc
+
+
+public
+parseFile : (String -> e)
+         -> (String -> String -> e)
+         -> Parser a
          -> String
-         -> Eff (Either String a) [FILE_IO ()]
-parseFile p fn =
-    case !(open fn Read) of
-      True => do
-        src <- doRead ""
-        close
-        pure $ parse p src
-      False => pure $ Left "Could Not Open File"
-  where
-    doRead : String -> Eff String [FILE_IO (OpenFile Read)]
-    doRead b = if (not !eof)
-                   then doRead (b ++ !readLine)
-                   else pure b
+         -> Eff (Either e a) [FILE_IO ()]
+parseFile rErr pErr p fn = do
+    Right src <- Lightyear.readFile rErr fn | Left err => pure (Left err)
+    case parse p src of
+      Left err  => pure $ Left (pErr fn err)
+      Right res => pure $ Right res
 
 
 -- --------------------------------------------------------------------- [ EOF ]
