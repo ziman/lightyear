@@ -104,16 +104,16 @@ angles p = between (token "<") (token ">") p
 ||| Parses `p` enclosed in single quotes and returns the result of `p`.
 ||| Not to be used for charLiterals.
 squote : Monad m => ParserT m String a -> ParserT m String a
-squote p = between (char '\'') (char '\'') p
+squote p = between (char '\'') (lexeme $ char '\'') p
 
 ||| Parses `p` enclosed in double quotes and returns the result of `p`.
 ||| Not to be used for `stringLiterals`.
 dquote : Monad m => ParserT m String a -> ParserT m String a
-dquote p = between (char '\"') (char '\"') p
+dquote p = between (char '\"') (lexeme $ char '\"') p
 
 ||| Collect the literal string contained between two characters
 quoted' : Monad m => Char -> Char -> ParserT m String String
-quoted' l r = map pack $ between (char l) (char r) (some (satisfy (/= r)))
+quoted' l r = map pack $ between (char l) (lexeme $ char r) (some (satisfy (/= r)))
 
 ||| Literal string between two identical characters
 quoted : Monad m => Char -> ParserT m String String
