@@ -11,7 +11,7 @@ import Lightyear.Core
 
 -- ------------------------------------------------------------------- [ Begin ]
 public
-class Layout str where
+interface Layout str where
   lineLengths : str -> List Int
 
 nat2int : Nat -> Int

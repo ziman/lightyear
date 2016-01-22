@@ -19,7 +19,7 @@ data Result str a =
   ||| Failure, returning a stack trace of errors based on `<?>`
   Failure (List (str, String)) -- a stacktrace of errors based on <?> and friends
 
-instance Functor (Result str) where
+implementation Functor (Result str) where
   map f (Success s x ) = Success s (f x)
   map f (Failure es) = Failure es
 
@@ -42,10 +42,10 @@ execParserT {m} {str} {a} (PT p) input = p (Result str a) success success failur
   where success x i = pure $ Success i x
         failure = pure . Failure
 
-instance Monad m => Functor (ParserT m str) where
+implementation Monad m => Functor (ParserT m str) where
   map {a} {b} f (PT p) = PT $ \r, us, cs => p r (us . f) (cs . f)
 
-instance Monad m => Applicative (ParserT m str) where
+implementation Monad m => Applicative (ParserT m str) where
   pure x = PT (\r, us, cs, ue, ce => us x)
 
   (<*>) (PT f) (PT g) = PT $ \r, us, cs, ue, ce =>
@@ -66,7 +66,7 @@ infixl 2 <*>|
         (\f' => let PT g = x in g r (cs . f') (cs . f') ce ce)
         ue ce
 
-instance Monad m => Monad (ParserT m str) where
+implementation Monad m => Monad (ParserT m str) where
   (>>=) (PT x) f = PT $ \r, us, cs, ue, ce =>
     x r (\x' => let PT y = f x' in y r us cs ue ce)
         (\x' => let PT y = f x' in y r cs cs ce ce)
@@ -76,7 +76,7 @@ instance Monad m => Monad (ParserT m str) where
 fail : String -> ParserT m str a
 fail msg = PT $ \r, us, cs, ue, ce, i => ue [(i, msg)]
 
-instance Monad m => Alternative (ParserT m str) where
+implementation Monad m => Alternative (ParserT m str) where
   empty = fail "non-empty alternative"
 
   (<|>) (PT x) (PT y) = PT $ \r, us, cs, ue, ce, i =>
@@ -106,7 +106,7 @@ commitTo : Monad m => ParserT m str a -> ParserT m str a
 commitTo (PT f) = PT $ \r, us, cs, ue, ce => f r cs cs ce ce
 
 -- There is no reason that we mark "str" as the determining type
--- other than to aid typeclass resolution.
+-- other than to aid typeinterface resolution.
 --
 -- I feel that having this restriction (which is probably okay
 -- given that the only streams so far are String and Text anyway)
@@ -116,7 +116,7 @@ commitTo (PT f) = PT $ \r, us, cs, ue, ce => f r cs cs ce ce
 --
 -- We make "str" the determining type because it's usually fixed
 -- by the parser monad you're working in, which helps resolution.
-class Stream tok str | str where
+interface Stream tok str | str where
   uncons : str -> Maybe (tok, str)
 
 ||| Matches a single element that satisfies some condition, accepting

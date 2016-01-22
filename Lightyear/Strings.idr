@@ -26,7 +26,7 @@ nat2int : Nat -> Int
 nat2int  Z    = 0
 nat2int (S x) = 1 + nat2int x
 
-instance Layout String where
+implementation Layout String where
   lineLengths = map (nat2int . Prelude.Strings.length) . lines
 
 -- --------------------------------------------------------- [ A String Parser ]
@@ -40,7 +40,7 @@ parse f s = let Id r = execParserT f s in case r of
   Success _ x => Right x
   Failure es  => Left $ formatError s es
 
-instance Stream Char String where
+implementation Stream Char String where
   uncons s with (strM s)
     uncons ""             | StrNil       = Nothing
     uncons (strCons x xs) | StrCons x xs = Just (x, xs)
