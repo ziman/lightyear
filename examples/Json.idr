@@ -6,16 +6,16 @@ import public Lightyear.Strings
 
 import public Data.SortedMap
 
-%access public
+%access public export
 
 data JsonValue = JsonString String
-               | JsonNumber Float
+               | JsonNumber Double
                | JsonBool Bool
                | JsonNull
                | JsonArray (List JsonValue)
                | JsonObject (SortedMap String JsonValue)
 
-instance Show JsonValue where
+Show JsonValue where
   show (JsonString s)   = show s
   show (JsonNumber x)   = show x
   show (JsonBool True ) = "true"
@@ -76,8 +76,8 @@ record Scientific where
   coefficient : Integer
   exponent : Integer
 
-scientificToFloat : Scientific -> Float
-scientificToFloat (MkScientific c e) = fromInteger c * exp
+scientificToDouble : Scientific -> Double
+scientificToDouble (MkScientific c e) = fromInteger c * exp
   where exp = if e < 0 then 1 / pow 10 (fromIntegerNat (- e))
                        else pow 10 (fromIntegerNat e)
 
@@ -93,8 +93,8 @@ parseScientific = do sign <- maybe 1 (const (-1)) `map` opt (char '-')
   where fromDigits : List (Fin 10) -> Integer
         fromDigits = foldl (\a, b => 10 * a + cast b) 0
 
-jsonNumber : Parser Float
-jsonNumber = map scientificToFloat parseScientific
+jsonNumber : Parser Double
+jsonNumber = map scientificToDouble parseScientific
 
 jsonBool : Parser Bool
 jsonBool  =  (char 't' >! string "rue"  *> return True)

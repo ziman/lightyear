@@ -11,7 +11,7 @@ import Data.Vect
 
 import Lightyear.Core
 
-%access public
+%access export
 
 -- --------------------------------------------------------------- [ Operators ]
 infixr 3 :::
