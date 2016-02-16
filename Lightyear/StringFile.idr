@@ -14,6 +14,7 @@ import public Effect.File
 import Lightyear
 import Lightyear.Strings
 
+%access export
 -- ---------------------------------------------------- [ A String File Parser ]
 
 namespace Lightyear
@@ -33,7 +34,6 @@ namespace Lightyear
                        else pure acc
 
 
-public
 parseFile : (String -> e)
          -> (String -> String -> e)
          -> Parser a

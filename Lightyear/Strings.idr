@@ -18,7 +18,7 @@ import Lightyear.Errmsg
 
 import Lightyear.Char
 
-%access public
+%access export
 
 -- -------------------------------------------------------- [ Helper Functions ]
 private
@@ -31,6 +31,7 @@ implementation Layout String where
 
 -- --------------------------------------------------------- [ A String Parser ]
 ||| Parsers, specialised to Strings
+public export
 Parser : Type -> Type
 Parser = ParserT Identity String
 

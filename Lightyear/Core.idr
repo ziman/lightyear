@@ -9,7 +9,7 @@ module Lightyear.Core
 
 import Data.Fin
 
-%access public
+%access public export
 %default total
 
 ||| Parse results
