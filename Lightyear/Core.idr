@@ -8,6 +8,8 @@
 module Lightyear.Core
 
 import Data.Fin
+import Control.Monad.Trans
+import Control.Monad.State
 
 %access public export
 %default total
@@ -71,6 +73,18 @@ implementation Monad m => Monad (ParserT m str) where
     x r (\x' => let PT y = f x' in y r us cs ue ce)
         (\x' => let PT y = f x' in y r cs cs ce ce)
         ue ce
+
+{- not very usable due to ordering of arguments
+implementation Monad m => MonadTrans (\m, a => ParserT m str a) where
+  lift x = PT $ \r, us, cs, ue, ce, str => (x >>= flip us str)
+-}
+
+lift' : Monad m => m a -> ParserT m str a
+lift' x = PT $ \r, us, cs, ue, ce, str => (x >>= flip us str)
+
+implementation MonadState s m => MonadState s (ParserT m str) where
+  get = lift' get
+  put = lift' . put
 
 ||| Fail with some error message
 fail : String -> ParserT m str a
