@@ -25,7 +25,7 @@ implementation Functor (Result str) where
   map f (Success s x ) = Success s (f x)
   map f (Failure es) = Failure es
 
-record ParserT (m : Type -> Type) str a where
+record ParserT str (m : Type -> Type) a where
   constructor PT
   runParserT :
     (r : Type) ->
@@ -37,17 +37,17 @@ record ParserT (m : Type -> Type) str a where
     m r
 
 ||| Run a parser monad on some input
-execParserT : Monad m => ParserT m str a
+execParserT : Monad m => ParserT str m a
                       -> (input : str)
                       -> m (Result str a)
-execParserT {m} {str} {a} (PT p) input = p (Result str a) success success failure failure input
+execParserT {str} {m} {a} (PT p) input = p (Result str a) success success failure failure input
   where success x i = pure $ Success i x
         failure = pure . Failure
 
-implementation Monad m => Functor (ParserT m str) where
+implementation Monad m => Functor (ParserT str m) where
   map {a} {b} f (PT p) = PT $ \r, us, cs => p r (us . f) (cs . f)
 
-implementation Monad m => Applicative (ParserT m str) where
+implementation Monad m => Applicative (ParserT str m) where
   pure x = PT (\r, us, cs, ue, ce => us x)
 
   (<*>) (PT f) (PT g) = PT $ \r, us, cs, ue, ce =>
@@ -60,37 +60,35 @@ infixl 2 <*>|
 ||| A variant of <$>, lazy in its second argument, which must NOT be
 ||| pattern-matched right away because we want to keep it lazy in case
 ||| it's not used.
-(<*>|) : Monad m => ParserT m str (a -> b)
-                 -> Lazy (ParserT m str a)
-                 -> ParserT m str b
+(<*>|) : Monad m => ParserT str m (a -> b)
+                 -> Lazy (ParserT str m a)
+                 -> ParserT str m b
 (<*>|) (PT f) x = PT $ \r, us, cs, ue, ce =>
     f r (\f' => let PT g = x in g r (us . f') (cs . f') ue ce)
         (\f' => let PT g = x in g r (cs . f') (cs . f') ce ce)
         ue ce
 
-implementation Monad m => Monad (ParserT m str) where
+implementation Monad m => Monad (ParserT str m) where
   (>>=) (PT x) f = PT $ \r, us, cs, ue, ce =>
     x r (\x' => let PT y = f x' in y r us cs ue ce)
         (\x' => let PT y = f x' in y r cs cs ce ce)
         ue ce
 
-{- not very usable due to ordering of arguments
-implementation Monad m => MonadTrans (\m, a => ParserT m str a) where
-  lift x = PT $ \r, us, cs, ue, ce, str => (x >>= flip us str)
--}
+implementation Monad m => MonadTrans (ParserT str) where
+  lift x = PT $ \r, us, cs, ue, ce, s => (x >>= flip us s)
 
-lift' : Monad m => m a -> ParserT m str a
+lift' : Monad m => m a -> ParserT str m a
 lift' x = PT $ \r, us, cs, ue, ce, str => (x >>= flip us str)
 
-implementation MonadState s m => MonadState s (ParserT m str) where
+implementation MonadState s m => MonadState s (ParserT str m) where
   get = lift' get
   put = lift' . put
 
 ||| Fail with some error message
-fail : String -> ParserT m str a
+fail : String -> ParserT str m a
 fail msg = PT $ \r, us, cs, ue, ce, i => ue [(i, msg)]
 
-implementation Monad m => Alternative (ParserT m str) where
+implementation Monad m => Alternative (ParserT str m) where
   empty = fail "non-empty alternative"
 
   (<|>) (PT x) (PT y) = PT $ \r, us, cs, ue, ce, i =>
@@ -102,21 +100,21 @@ infixl 3 <|>|
 ||| A variant of <|>, lazy in its second argument, which must NOT be
 ||| pattern-matched right away because we want to keep it lazy in case
 ||| it's not used.
-(<|>|) : Monad m => ParserT m str a
-                 -> Lazy (ParserT m str a)
-                 -> ParserT m str a
+(<|>|) : Monad m => ParserT str m a
+                 -> Lazy (ParserT str m a)
+                 -> ParserT str m a
 (<|>|) (PT x) y = PT $ \r, us, cs, ue, ce, i =>
   x r us cs (\err => let PT y' = y in y' r us cs (ue . (err ++))
                                                  (ce . (err ++)) i) ce i
 
 infixl 0 <?>
 ||| Associate an error with parse failure
-(<?>) : Monad m => ParserT m str a -> String -> ParserT m str a
+(<?>) : Monad m => ParserT str m a -> String -> ParserT str m a
 (PT f) <?> msg = PT $ \r, us, cs, ue, ce, i =>
   f r us cs (ue . ((i, msg) ::)) (ce . ((i, msg) ::)) i
 
 ||| Commit to a parse alternative and prevent backtracking
-commitTo : Monad m => ParserT m str a -> ParserT m str a
+commitTo : Monad m => ParserT str m a -> ParserT str m a
 commitTo (PT f) = PT $ \r, us, cs, ue, ce => f r cs cs ce ce
 
 -- There is no reason that we mark "str" as the determining type
@@ -137,7 +135,7 @@ interface Stream tok str | str where
 ||| a transformation of successes.
 satisfyMaybe : (Monad m, Stream tok str)
                         => (tok -> Maybe out)
-                        -> ParserT m str out
+                        -> ParserT str m out
 satisfyMaybe {tok=tok} {str=str} f =
   PT $ \r, us, cs, ue, ce, i =>
     case uncons {tok=tok} {str=str} i of
@@ -149,6 +147,6 @@ satisfyMaybe {tok=tok} {str=str} f =
 ||| Matches a single element that satisfies some condition.
 satisfy : (Monad m, Stream tok str)
                    => (tok -> Bool)
-                   -> ParserT m str tok
+                   -> ParserT str m tok
 satisfy p = satisfyMaybe (\t => if p t then Just t else Nothing)
 -- --------------------------------------------------------------------- [ EOF ]
