@@ -131,4 +131,4 @@ octDigit            = satisfy isOctDigit    <?> "octal digit"
 
 ||| This parser succeeds for any character. Returns the parsed character.
 anyChar : (Monad m, Stream Char s) => ParserT s m Char
-anyChar             = satisfy (const True)
+anyChar             = anyToken              <?> "any character"
