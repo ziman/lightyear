@@ -11,10 +11,11 @@ import Data.Fin
 import Control.Monad.Trans
 import Control.Monad.State
 
-%access public export
+%access export
 %default total
 
 ||| Parse results
+public export
 data Result str a =
   ||| Sucess, returning the remaining string and the parser result
   Success str a |
@@ -79,6 +80,7 @@ implementation Monad m => MonadTrans (ParserT str) where
 
 -- HACK
 -- for some reason the MonadState instance does not work with plain lift :(
+private
 lift' : Monad m => m a -> ParserT str m a
 lift' = lift
 
