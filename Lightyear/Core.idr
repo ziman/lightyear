@@ -153,4 +153,16 @@ satisfy : (Monad m, Stream tok str)
                    => (tok -> Bool)
                    -> ParserT str m tok
 satisfy p = satisfyMaybe (\t => if p t then Just t else Nothing)
+
+||| Succeeds if and only if the argument parser fails.
+|||
+||| In Parsec, this combinator is called `notFollowedBy`.
+requireFailure : ParserT str m tok -> ParserT str m ()
+requireFailure (PT f) = PT $ \r, us, cs, ue, ce, i =>
+                               f r
+                                 (\t, s => ue [(i, "argument parser to fail")])
+                                 (\t, s => ce [(i, "argument parser to fail")])
+                                 (\errs => us () i)
+                                 (\errs => cs () i)
+                                 i
 -- --------------------------------------------------------------------- [ EOF ]
