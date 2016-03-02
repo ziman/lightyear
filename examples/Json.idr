@@ -48,7 +48,7 @@ hexQuad = do
 
 specialChar : Parser Char
 specialChar = do
-  c <- satisfy (const True)
+  c <- anyChar
   case c of
     '"'  => pure '"'
     '\\' => pure '\\'

@@ -24,6 +24,20 @@ private
 (::.) : a -> Vect n a -> Vect (S n) a
 (::.) x xs = x :: xs
 
+-- -------------------------------------------------- [ Any Token and No Token ]
+
+||| Parse a single arbitrary token. Returns the parsed token.
+|||
+||| This parser will fail if and only if the input stream is empty.
+anyToken : (Monad m, Stream tok str) => ParserT str m tok
+anyToken = satisfy (const True) <?> "any token"
+
+||| Parse the end of input.
+|||
+||| This parser will succeed if and only if the input stream is empty.
+eof : (Monad m, Stream tok str) => ParserT str m ()
+eof = requireFailure anyToken <?> "end of input"
+
 -- ---------------------------------------------------- [ Multiple Expressions ]
 
 ||| Run some parser as many times as possible, collecting a list of
