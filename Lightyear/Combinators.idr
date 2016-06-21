@@ -92,6 +92,28 @@ sepByN : Monad m => (n : Nat)
 sepByN    Z  p s = pure Vect.Nil
 sepByN (S n) p s = [| p ::. ntimes n (s *> p) |]
 
+||| Parse one or more `p`s, separated by `op`s.
+|||
+||| @ p  the parser
+||| @ op the parser for operators
+chainl1 : Monad m => (p : ParserT str m a)
+                  -> (op: ParserT str m (a -> a -> a))
+                  -> ParserT str m a
+chainl1 p op = p >>= rest
+  where rest a1 = (do f <- op
+                      a2 <- p
+                      rest (f a1 a2)) <|> pure a1
+
+||| Parse zero or more `p`s, separated by `op`s. Return `a` when there are no occurences.
+|||
+||| @ p  the parser
+||| @ op the parser for operators
+chainl : Monad m => (p : ParserT str m a)
+                 -> (op : ParserT str m (a -> a -> a))
+                 -> a
+                 -> ParserT str m a
+chainl p op a = (p `chainl1` op) <|> pure a
+
 ||| Alternate between matches of `p` and `s`, starting with `p`,
 ||| returning a list of successes from both.
 alternating : Monad m => (p : ParserT str m a)
