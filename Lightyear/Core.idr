@@ -75,18 +75,12 @@ implementation Monad m => Monad (ParserT str m) where
         (\x' => let PT y = f x' in y r cs cs ce ce)
         ue ce
 
-implementation Monad m => MonadTrans (ParserT str) where
+implementation MonadTrans (ParserT str) where
   lift x = PT $ \r, us, cs, ue, ce, s => (x >>= flip us s)
 
--- HACK
--- for some reason the MonadState instance does not work with plain lift :(
-private
-lift' : Monad m => m a -> ParserT str m a
-lift' = lift
-
 implementation MonadState s m => MonadState s (ParserT str m) where
-  get = lift' get
-  put = lift' . put
+  get = lift get
+  put = lift . put
 
 ||| Fail with some error message
 fail : String -> ParserT str m a
