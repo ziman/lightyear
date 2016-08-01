@@ -17,30 +17,20 @@ import Lightyear.Strings
 %access export
 -- ---------------------------------------------------- [ A String File Parser ]
 
-namespace Lightyear
-  private
-  readFile : (String -> e) -> String -> Eff (Either e String) [FILE_IO ()]
-  readFile errFunc fname = do
-      case !(open fname Read) of
-        False => pure $ Left (errFunc fname)
-        True => do
-          src <- readAcc ""
-          close
-          pure $ Right src
-    where
-      readAcc : String -> Eff String [FILE_IO (OpenFile Read)]
-      readAcc acc = if (not !(eof))
-                       then readAcc (acc ++ !(readLine))
-                       else pure acc
-
-
-parseFile : (String -> e)
-         -> (String -> String -> e)
-         -> Parser a
-         -> String
-         -> Eff (Either e a) [FILE_IO ()]
+||| Parse a file using the specified parser.
+|||
+||| @rErr  A custom error for reporting FileIO errors.
+||| @pErr  A custom error for reporting Parsing errors.
+||| @p     The parser to use on the specified file.
+||| @fname The name of the file to parser.
+parseFile : (rErr  : String -> FileError -> e)
+         -> (pErr  : String -> String -> e)
+         -> (p     : Parser a)
+         -> (fname : String)
+         -> Eff (Either e a) [FILE ()]
 parseFile rErr pErr p fn = do
-    Right src <- Lightyear.readFile rErr fn | Left err => pure (Left err)
+    Result src <- readFile fn
+                  | FError err => pure (Left (rErr fn err))
     case parse p src of
       Left err  => pure $ Left (pErr fn err)
       Right res => pure $ Right res
