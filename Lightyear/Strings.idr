@@ -149,8 +149,8 @@ manyTill : Monad m => ParserT String m a
 manyTill p end = scan
   where
     scan : Monad m => ParserT String m (List a)
-    scan = do { end; return List.Nil } <|>
-           do { x <- p; xs <- scan; return (x::xs)}
+    scan = do { end; pure List.Nil } <|>
+           do { x <- p; xs <- scan; pure (x::xs)}
 
 
 -- -------------------------------------------------------- [ Testing Function ]
