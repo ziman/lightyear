@@ -1,7 +1,5 @@
 package lightyear
 
-package lightyear
-
 sourceloc  = git://git@github.com:ziman/lightyear.git
 bugtracker = http://www.github.com/ziman/lightyear/issues
 
