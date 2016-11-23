@@ -97,11 +97,11 @@ jsonNumber : Parser Double
 jsonNumber = map scientificToDouble parseScientific
 
 jsonBool : Parser Bool
-jsonBool  =  (char 't' >! string "rue"  *> return True)
-         <|> (char 'f' >! string "alse" *> return False) <?> "JSON Bool"
+jsonBool  =  (char 't' >! string "rue"  *> pure True)
+         <|> (char 'f' >! string "alse" *> pure False) <?> "JSON Bool"
 
 jsonNull : Parser ()
-jsonNull = (char 'n' >! string "ull" >! return ()) <?> "JSON Null"
+jsonNull = (char 'n' >! string "ull" >! pure ()) <?> "JSON Null"
 
 mutual
   jsonArray : Parser (List JsonValue)
