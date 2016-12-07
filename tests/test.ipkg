@@ -1,0 +1,10 @@
+package test
+
+opts = "--sourcepath ../ --idrispath ../ -p contrib"
+
+modules = Json
+        , JsonTest
+        , Test
+
+tests = JsonTest.jsonTests
+      , Test.tests
