@@ -19,22 +19,23 @@ die() {
 }
 
 clean_up() {
-	rm -f *.ibc test json output
+    idris --clean test.ipkg
+	rm -f *.ibc output
 }
 
 clean_up
 
 echo "compiling lightyear tests..."
-idris Test.idr -p lightyear -o test || die "* could not compile tests *"
+idris --build test.ipkg || die "* could not compile tests *"
 
 echo "compiled OK, running lightyear tests..."
-$TIMEOUTCMD 5s ./test > output || die "* test failed or timed out *"
+$TIMEOUTCMD 30s idris --testpkg test.ipkg | grep -v -e "idris" > output || die "* test failed or timed out *"
 
-echo "compiling the JSON test..."
-idris JsonTest.idr -p lightyear -p contrib -o json || die "* could not compile the json test *"
-
-echo "compiled OK, running the JSON test..."
-$TIMEOUTCMD 5s ./json >> output || die "* test failed or timed out *"
+#echo "compiling the JSON test..."
+#idris JsonTest.idr -p lightyear -p contrib -o json || die "* could not compile the json test *"
+#
+#echo "compiled OK, running the JSON test..."
+#$TIMEOUTCMD 5s ./json >> output || die "* test failed or timed out *"
 
 # use a default parameter if $1 is not set
 if [ "${1-}" = "believe_me" ]; then

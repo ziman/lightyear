@@ -12,3 +12,4 @@ modules = Lightyear
         , Lightyear.StringFile
         , Lightyear.Strings
         , Lightyear.Char
+        , Lightyear.Testing
