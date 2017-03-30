@@ -69,6 +69,7 @@ It is worth noting that Idris itself is a _strict_ language, and thus the `<|>`
 operator will evaluate both its arguments eagerly by default. In order to lazily
 evaluate different parsing branches we are required to use a special operator:
 `<|>|`. In general, all recursive calls of combinators have to occur in a lazy context.
+(With mutual recursion, the call cycle has to be broken by laziness in at least one place.)
 
 In the wild, it might look like this:
 
