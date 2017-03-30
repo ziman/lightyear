@@ -58,7 +58,7 @@ implementation Monad m => Applicative (ParserT str m) where
 
 
 infixl 2 <*>|
-||| A variant of <$>, lazy in its second argument, which must NOT be
+||| A variant of <*>, lazy in its second argument, which must NOT be
 ||| pattern-matched right away because we want to keep it lazy in case
 ||| it's not used.
 (<*>|) : Monad m => ParserT str m (a -> b)
@@ -116,7 +116,7 @@ commitTo : Monad m => ParserT str m a -> ParserT str m a
 commitTo (PT f) = PT $ \r, us, cs, ue, ce => f r cs cs ce ce
 
 -- There is no reason that we mark "str" as the determining type
--- other than to aid typeinterface resolution.
+-- other than to aid typeclass/interface resolution.
 --
 -- I feel that having this restriction (which is probably okay
 -- given that the only streams so far are String and Text anyway)
