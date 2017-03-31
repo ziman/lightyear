@@ -34,13 +34,12 @@ jsonTests = runTests
       "JSON 4"
       jsonToplevelValue
       "{{\n  \"hallo\":42,\"nichts\":null}"
-      """at 1:1 expected:
-  character '['
-at 1:1 expected:
-  a different token
-at 1:2 expected:
-  character '}'
-at 1:2 expected:
-  a different token
-"""
+      """At 1:1:
+	character '['
+At 1:1:
+	a different token
+At 1:2:
+	character '}'
+At 1:2:
+	a different token"""
   ]

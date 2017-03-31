@@ -12,22 +12,13 @@ import public Data.Fin
 
 import public Control.Monad.Identity
 
+import Lightyear.Position
 import Lightyear.Core
 import Lightyear.Combinators
-import Lightyear.Errmsg
 
 import Lightyear.Char
 
 %access export
-
--- -------------------------------------------------------- [ Helper Functions ]
-private
-nat2int : Nat -> Int
-nat2int  Z    = 0
-nat2int (S x) = 1 + nat2int x
-
-implementation Layout String where
-  lineLengths = map (nat2int . Prelude.Strings.length) . lines
 
 -- --------------------------------------------------------- [ A String Parser ]
 ||| Parsers, specialised to Strings
@@ -36,15 +27,58 @@ Parser : Type -> Type
 Parser = ParserT String Identity
 
 ||| Run a parser against an input string
-parse : Parser a -> String -> Either String a
-parse f s = let Id r = execParserT f s in case r of
-  Success _ x => Right x
-  Failure es  => Left $ formatError s es
+parseGeneric : (src_ident : Maybe String)
+            -> (tab_width : Nat)
+            -> (parser    : Parser a)
+            -> (source    : String)
+            -> Either String a
+parseGeneric src tw f s = let Id r = execParserT f (initialState src s tw)
+                           in case r of
+                               MkReply _ (Success x)  => Right x
+                               MkReply _ (Failure es) => Left $ concat $ intersperse "\n" $ map display es
+
+||| Run a parser against an input string with a custom tab-width.
+parseCustom : (tab_width : Nat)
+           -> (parser    : Parser a)
+           -> (source    : String)
+           -> Either String a
+parseCustom = parseGeneric Nothing
+
+
+||| Run a parser against an input string assuming that tab-widths are
+||| eight characters in length.
+parse : (parser : Parser a)
+     -> (source : String)
+     -> Either String a
+parse = parseGeneric Nothing 8
+
+namespace File
+
+  ||| Run a parser against an input string taken from the named file
+  ||| with a custom tab-width.
+  parseCustom : (fname     : String)
+             -> (tab_width : Nat)
+             -> (parser    : Parser a)
+             -> (source    : String)
+             -> Either String a
+  parseCustom fname = parseGeneric (Just fname)
+
+
+  ||| Run a parser against an input string taken from the named file,
+  ||| such that tab-widths are assumed to be eight characters in
+  ||| length.
+  parse : (fname  : String)
+       -> (parser : Parser a)
+       -> (source : String)
+       -> Either String a
+  parse fname = parseGeneric (Just fname) 8
+
 
 implementation Stream Char String where
   uncons s with (strM s)
     uncons ""             | StrNil       = Nothing
     uncons (strCons x xs) | StrCons x xs = Just (x, xs)
+  updatePos tw pos tk = (increment pos tk, pos)
 
 -- ---------------------------------------------------------- [ Reserved Stuff ]
 

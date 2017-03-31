@@ -7,7 +7,6 @@
 module Lightyear
 
 import public Lightyear.Core
-import public Lightyear.Errmsg
 import public Lightyear.Combinators
 
 -- --------------------------------------------------------------------- [ EOF ]

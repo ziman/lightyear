@@ -6,9 +6,9 @@ bugtracker = http://www.github.com/ziman/lightyear/issues
 pkgs = effects
 
 modules = Lightyear
+        , Lightyear.Position
         , Lightyear.Core
         , Lightyear.Combinators
-        , Lightyear.Errmsg
         , Lightyear.StringFile
         , Lightyear.Strings
         , Lightyear.Char

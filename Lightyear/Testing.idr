@@ -109,7 +109,7 @@ parseTestCmpNot : Show a
                -> TestReport
 parseTestCmpNot title p input expected = do
   case parse p input of
-    Left actual  => if actual == expected
+    Left actual  => if trim actual == trim expected
                       then Pass title
                       else AdvParseFailure title input expected actual
     Right result => AdvResultFailure title input result result
