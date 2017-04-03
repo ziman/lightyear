@@ -35,7 +35,7 @@ namespace Generic
     where
       partial
       nextTab : Nat
-      nextTab = ((c + 7) `div` twidth) * twidth + 1
+      nextTab = (div ((minus c 1) + twidth) twidth) * twidth + 1
 
   increment _ (MkPos f l c) _ = MkPos f l (S c)
 
