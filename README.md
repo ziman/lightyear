@@ -3,6 +3,8 @@
 Lightweight parser combinator library for Idris,
 inspired by [Parsec](http://hackage.haskell.org/package/parsec).
 
+[![Build Status](https://travis-ci.org/ziman/lightyear.svg?branch=master)](https://travis-ci.org/ziman/lightyear)
+
 Module overview:
 * `Lightyear.Core`: central definitions + instances
 * `Lightyear.Errmsg`: error message formatting, mainly internal library
