@@ -90,6 +90,7 @@ included as `<*>|`. Conversely to `<|>|`, the RHS of `<*>|` will be evaluated
 only if the LHS of `<*>|` _succeeds_.
 
 ### Example
+
 Lightyear is used to parse BibTeX in <a href="https://github.com/ziman/bibdris/blob/master/Bibtex.idr">bibdris</a>.
 
 ## Build
