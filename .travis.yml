@@ -1,0 +1,5 @@
+os: osx
+install:
+  - brew install idris
+script:
+  - make test 
