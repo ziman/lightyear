@@ -29,7 +29,7 @@ echo "compiling lightyear tests..."
 idris --build test.ipkg || die "* could not compile tests *"
 
 echo "compiled OK, running lightyear tests..."
-$TIMEOUTCMD 30s idris --testpkg test.ipkg | grep -v -e "idris" > output || die "* test failed or timed out *"
+$TIMEOUTCMD 120s idris --testpkg test.ipkg | grep -v -e "idris" > output || die "* test failed or timed out *"
 
 #echo "compiling the JSON test..."
 #idris JsonTest.idr -p lightyear -p contrib -o json || die "* could not compile the json test *"
