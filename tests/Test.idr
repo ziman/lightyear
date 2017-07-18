@@ -24,22 +24,10 @@ tests = runTests
   [ parseTestCmp "Test 1" nat          (==) "123"        123
   , parseTestCmp "Test 2" (listOf nat) (==) "[1,2,3,99]" [1,2,3,99]
 
-  , parseTestCmpNot "Test 3" (listOf nat) "foo" """at 1:1 expected:
-  string "["
-at 1:1 expected:
-  character '['
-at 1:1 expected:
-  a different token
-"""
+  , parseTestCmpNot "Test 3" (listOf nat) "foo" "At 1:1:\n\tstring \"[\"\nAt 1:1:\n\tcharacter '['\nAt 1:1:\n\ta different token"
 
   -- should commit and fail
-  , parseTestCmpNot "Test 4" (listOf nat <|> (string "[foo" *> pure List.Nil)) "[foo" """at 1:2 expected:
-  string "]"
-at 1:2 expected:
-  character ']'
-at 1:2 expected:
-  a different token
-"""
+  , parseTestCmpNot "Test 4" (listOf nat <|> (string "[foo" *> pure List.Nil)) "[foo" "At 1:2:\n\tstring \"]\"\nAt 1:2:\n\tcharacter ']'\nAt 1:2:\n\ta different token"
 
   , parseTestCmp "Test 5" (listOf $ listOf nat)   (==) "[[1,2],[],[3,4,5]]" [[1, 2], [], [3, 4, 5]]
   , parseTestCmp "Test 6" (listOf' nat)           (==) "[1,2,3,99]"         [1, 2, 3, 99]

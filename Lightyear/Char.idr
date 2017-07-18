@@ -16,7 +16,6 @@ import public Control.Monad.Identity
 
 import Lightyear.Core
 import Lightyear.Combinators
-import Lightyear.Errmsg
 
 %access export
 
