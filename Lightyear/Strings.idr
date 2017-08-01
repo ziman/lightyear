@@ -78,7 +78,7 @@ implementation Stream Char String where
   uncons s with (strM s)
     uncons ""             | StrNil       = Nothing
     uncons (strCons x xs) | StrCons x xs = Just (x, xs)
-  updatePos tw pos tk = (increment pos tk, pos)
+  updatePos tw pos tk = (increment tw pos tk, pos)
 
 -- ---------------------------------------------------------- [ Reserved Stuff ]
 
