@@ -120,7 +120,7 @@ semi = token ";" <?> "semi colon"
 
 -- -------------------------------------------------- [ Delineated Expressions ]
 
-||| Parses `p` enclosed in parenthesis and returns result of `p`.
+||| Parses `p` enclosed in parentheses and returns result of `p`.
 parens : Monad m => ParserT String m a -> ParserT String m a
 parens p = between (token "(") (token ")") p
 
