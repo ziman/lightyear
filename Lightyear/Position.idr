@@ -25,32 +25,28 @@ defaultPos fname = MkPos fname 1 1
 
 namespace Generic
   ||| Increment the position one character.
-  partial
   increment : (tabwidth  : Nat)
            -> (curr_pos  : Position)
            -> (character : Char)
            -> Position
   increment _      (MkPos f l _) '\n' = MkPos f (S l) 1
-  increment twidth (MkPos f l c) '\t' = MkPos f l     nextTab
+  increment twidth (MkPos f l c) '\t' = MkPos f l     (nextTab twidth)
     where
-      partial
-      nextTab : Nat
-      nextTab = (div ((minus c 1) + twidth) twidth) * twidth + 1
+      nextTab : Nat -> Nat
+      nextTab Z              = c
+      nextTab twidth@(S ptw) = (divNatNZ ((minus c 1) + twidth) twidth SIsNotZ) * twidth + 1
 
   increment _ (MkPos f l c) _ = MkPos f l (S c)
 
   ||| Increment the position one character.
-  partial
   inc : Nat -> Position -> Char -> Position
   inc = Generic.increment
 
 ||| Increment the position one character with a default tab width of eight.
-partial
 increment : Position -> Char -> Position
 increment = Generic.increment 8
 
 ||| Increment the position one character with a default tab width of eight.
-partial
 inc : Position -> Char -> Position
 inc = Generic.increment 8
 
