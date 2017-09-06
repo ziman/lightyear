@@ -35,4 +35,7 @@ tests = runTests
 
   -- should commit and fail
   , parseTestCmp "Test 7" (listOf' nat <|> (string "[foo" *> pure List.Nil)) (==) "[foo" []
+
+  -- should NOT commit
+  , parseTestCmp "Test 8" ((getPosition *> string "x") <|> string "y") (==) "y" "y"
   ]
