@@ -217,17 +217,11 @@ requireFailure (PT f) = PT $ \r, us, cs, ue, ce, (ST i pos tw) =>
                                  (\errs, s => cs () s)
                                  (ST i pos tw)
 
-
-interface (Monad m, Stream tok str) => ParserM tok str (m : Type -> Type) | m where
-  getState : m (State str)
-
-(Monad m, Stream tok str) => ParserM tok str (ParserT str m) where
-  getState = PT $ \r,us,cs,ue,ce,s => cs s s
+getState : ParserT str m (State str)
+getState = PT $ \r,us,cs,ue,ce,s => us s s
 
 ||| Return the current position of the parser in the input stream.
-getPosition : ParserM tok str m => m Position
-getPosition = do
-  st <- getState
-  pure (position st)
+getPosition : Monad m => ParserT str m Position
+getPosition = position <$> getState
 
 -- --------------------------------------------------------------------- [ EOF ]
