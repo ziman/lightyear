@@ -164,7 +164,7 @@ opt p = map Just p <|> pure Nothing
 ||| @close The closing parser.
 ||| @p The parser for the middle part.
 between : Monad m => (open : ParserT str m a)
-                  -> (close : ParserT str m a)
+                  -> (close : ParserT str m c)
                   -> (p : ParserT str m b)
                   -> ParserT str m b
 between open close p = open *> p <* close
