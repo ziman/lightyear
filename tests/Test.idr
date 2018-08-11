@@ -38,4 +38,7 @@ tests = runTests
 
   -- should NOT commit
   , parseTestCmp "Test 8" ((getPosition *> string "x") <|> string "y") (==) "y" "y"
+
+  -- should not eat up the one "b"
+  , parseTestCmp "Test 9" (ntimes 4 (requireFailure (string "bb") *> anyChar)) (==) "abcde" ['a','b','c','d']
   ]
