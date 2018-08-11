@@ -209,13 +209,15 @@ satisfy p = satisfyMaybe (\t => if p t then Just t else Nothing)
 |||
 ||| In Parsec, this combinator is called `notFollowedBy`.
 requireFailure : ParserT str m tok -> ParserT str m ()
-requireFailure (PT f) = PT $ \r, us, cs, ue, ce, (ST i pos tw) =>
-                               f r
-                                 (\t, s => ue [Err pos "argument parser to fail"] s)
-                                 (\t, s => ce [Err pos "argument parser to fail"] s)
-                                 (\errs, s => us () s)
-                                 (\errs, s => cs () s)
-                                 (ST i pos tw)
+requireFailure (PT f) = PT requireFailureHelper where
+    requireFailureHelper r us cs ue ce ss@(ST i pos tw) =
+        f r
+            (\t, s => ue [Err pos "argument parser to fail"] s)
+            (\t, s => ce [Err pos "argument parser to fail"] s)
+            (\errs, _ => us () ss)
+            (\errs, _ => cs () ss)
+            ss
+
 
 getState : ParserT str m (State str)
 getState = PT $ \r,us,cs,ue,ce,s => us s s
