@@ -85,7 +85,7 @@ In the above example, the whole RHS of `<|>|` is lazy, and so the recursive
 occurrence of `parseExpr` in it will be evaluated only if the LHS of `<|>|` fails.
 Using `<|>` would cause infinite recursion.
 
-For convenience, a version of `<*>` that lazily evalutes its second argument is
+For convenience, a version of `<*>` that lazily evaluates its second argument is
 included as `<*>|`. Conversely to `<|>|`, the RHS of `<*>|` will be evaluated
 only if the LHS of `<*>|` _succeeds_.
 
